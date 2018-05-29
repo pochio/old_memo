@@ -1,0 +1,126 @@
+
+.. _how_to_use_sphinx:
+.. primary_domain::bash:
+
+======
+Sphinx
+======
+
+- ドキュメント作成ツール
+
+参考URL
+=======
+- Sphinx日本ユーザ会_
+- Sphinxドキュメント_
+- reStructuredText入門_
+- Sphinxマークアップ集_
+- Sphinxドメイン_
+
+.. _Sphinx日本ユーザ会: http://docs.sphinx-users.jp/index.html
+.. _Sphinxドキュメント: http://docs.sphinx-users.jp/contents.html
+.. _reStructuredText入門: http://docs.sphinx-users.jp/rest.html#rst-primer
+.. _Sphinxマークアップ集: http://docs.sphinx-users.jp/markup/index.html#sphinxmarkup
+.. _Sphinxドメイン: http://docs.sphinx-users.jp/domains.html#domains
+
+Fedora 21 での導入手順
+=======================
+
+Yumでも導入できるが、そちらはバージョンが古いので "pip" での導入を薦める。生成されるドキュメントの見た目はテーマで好きに変えられる。自分は "sphinx-bootstrap-theme_" を利用している。
+
+::
+
+    $ sudo yum groupinstall development-tools
+    $ sudo yum install python-setuptools python-pip python-devel
+    $ sudo pip install sphinx sphinx-bootstrap-theme
+
+.. _sphinx-bootstrap-theme: https://github.com/ryan-roemer/sphinx-bootstrap-theme
+
+初期設定
+--------
+#. ドキュメントのベースとなるディレクトリを作成
+#. QuickStartで初期設定を行う::
+
+    $ mkdir example && cd $_
+    $ sphinx-quickstart
+
+あとは "reStructuredText入門_" などを参照しドキュメントを作成、各形式に出力するだけ（楽！）
+
+sphinx-bootstrap-theme
+========================
+
+自分の好みに合わせて少しだけ変更を加えた
+
+見出しフォントサイズの変更
+--------------------------
+
+見出し(h1,h2..)のフォントサイズを変えたかったので "bootstrap-sphinx.css_t" の table の下あたりに、フォントサイズの指定を加えた。
+
+.. code-block:: html
+
+  /*
+   * custom fontsize
+   */
+
+  h1 { font-size: 1.3em }
+  h2 { font-size: 1.2em }
+  h3 { font-size: 1.125em }
+  h4 { font-size: 1em }
+  h5 { font-size: 0.75em }
+  h6 { font-size: 0.625em }
+
+Google Analytics の挿入
+--------------------------
+
+"layout.html" の93行目のmetaタグの下にトラッキングコードを追記
+
+.. code-block:: html
+
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Google Analytics : Start -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-61257604-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+    <!-- Google Analytics : End -->
+
+    {% endblock %}
+
+Markdown対応
+==============
+
+.. code-block:: bash
+
+    $ pip install recommonmark
+    $ vi conf.py
+
+::
+
+    from recommonmark.parser import CommonMarkParser
+
+    source_parsers = {'.md': CommonMarkParser}
+    source_suffix = ['.rst', '.md']
+
+こんだけ。
+
+メモ
+====
+
+- コードサンプルの表示
+
+  | 行末を"::"とする事でソースコードの表示を開始する。デフォはPythonなので言語を変更する場合は、highlightかcode-blockを利用して変更する。
+  | .. highlight:: c      : ページ内の言語を"c"に設定
+  | .. code-block:: ruby  : ブロック内の言語を"ruby"に設定
+
+- ハイライト可能な言語については http://pygments.org/docs/lexers/ を参照
+- ドメインを指定する事で作成されるドキュメントを特定の言語へ向けたものに特化する(デフォルト値はPython(py))
+
+  | .. primary_domain:: ... デフォルトドメインの指定(Nonで無効化)
+  | .. default-domain:: ... 単一ファイル内のドメイン指定

@@ -1,0 +1,24 @@
+
+# ATOMエディタメモ
+
+## 導入したプラグイン
+
+- atom-html-preview
+- atom-runner
+- file-type-icons
+- markdown-writer
+- pigments
+- minimap
+- emmet
+- color-picker
+- atom-beautify
+- activate-power-mode
+  - 楽しいけどVirtualBox+Fedora上のAtomだと重い。。
+- git-puls
+- marge-conflict
+
+## reStructuredText 対応
+
+- pandoc (yum/dnf install)
+- language-restructuredtext
+- rst-preview-pandoc

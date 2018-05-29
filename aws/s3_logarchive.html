@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AWS/S3へのログバックアップ &#8212; Memo  ドキュメント</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="AmazonLinux + lsyncd+rsyncd の確認" href="lsyncd.html" />
+    <link rel="prev" title="AWS" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../oss/index.html">OSS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../oss/sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix3.html">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3-on-cloud.html">Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../linux/index.html">RHEL/CentOS/Fedora</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">AWS</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">AWS/S3へのログバックアップ</a><ul>
+<li><a class="reference internal" href="#s3-iam">S3,IAMの準備</a><ul>
+<li><a class="reference internal" href="#s3">S3で新規バケットを作成</a></li>
+<li><a class="reference internal" href="#iam">IAMアカウントの準備</a></li>
+<li><a class="reference internal" href="#">新規ポリシーの作成</a></li>
+<li><a class="reference internal" href="#">ポリシーのアタッチとアクセス確認</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ec2-awscli">EC2インスタンス/awscliの設定</a><ul>
+<li><a class="reference internal" href="#awscli">awscli の設定</a></li>
+<li><a class="reference internal" href="#awscli">awscli の動作確認</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#">ログのアーカイブのテスト</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="index.html" title="Previous Chapter: AWS"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; AWS</span>
+    </a>
+  </li>
+  <li>
+    <a href="lsyncd.html" title="Next Chapter: AmazonLinux + lsyncd+rsyncd の確認"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">AmazonLinux +... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="aws-s3">
+<span id="aws-s3"></span><h1>AWS/S3へのログバックアップ<a class="headerlink" href="#aws-s3" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>EC2からS3へログをバックアップしたいと言われたので調べてみた。ローテートのタイミングでアップデートすれば良いのかな？と思ったり。</p>
+<div class="section" id="s3-iam">
+<span id="s3-iam"></span><h2>S3,IAMの準備<a class="headerlink" href="#s3-iam" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="s3">
+<span id="s3"></span><h3>S3で新規バケットを作成<a class="headerlink" href="#s3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>S3で新規にログ保管用のバケットを作成する。</p>
+<ol class="simple">
+<li>[サービス]-[S3]</li>
+<li>[バケットの作成]</li>
+<li><strong>バケット名</strong> を入力し <strong>リージョン</strong> を選択して作成</li>
+</ol>
+<ul class="simple">
+<li>一度作成したバケットは名前を変更できないので後悔しないように注意</li>
+<li>必要に応じてログ記録など詳細設定も調整する。</li>
+</ul>
+</div>
+<div class="section" id="iam">
+<span id="iam"></span><h3>IAMアカウントの準備<a class="headerlink" href="#iam" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>EC2インスタンスからS3へログをアップロードするためのグループ および アカウントを作成する。</p>
+<ol class="simple">
+<li>対象サーバからS3にアクセスするための管理グループを作成(１アカウントのみで良ければ不要)</li>
+<li>アカウントを作成する。作成時にアクセスキーの生成も行う。</li>
+<li><font color="red"><b>アクセスキー ID</b></font> と <font color="red"><b>シークレットアクセスキー</b></font> をメモするか、<font color="red"><b>認証情報のダウンロード</b></font>を行い保管しておく。</li>
+</ol>
+</div>
+<div class="section" id="">
+<span id="id1"></span><h3>新規ポリシーの作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>上記で作成したグループ/アカウントにアタッチする、S3操作のみの最小限の権限ポリシーを新規作成する。</p>
+<ol class="simple">
+<li>[ポリシー]-[ポリシーの作成] を選択</li>
+<li>[Policy Generator] を選択</li>
+<li>下記のようにステートメントを設定し [ステートメントの追加] を選択</li>
+</ol>
+<ul class="simple">
+<li>効果: <strong>許可</strong></li>
+<li>AWS サービス: <strong>Amazon S3</strong></li>
+<li>アクション: <strong>すべてのアクション</strong></li>
+<li>Amazon リソースネーム（ARN）: <strong>arn:aws:s3:::[バケット名], arn:aws:s3:::[バケット名]/</strong><br><br>
+必要に応じて &quot;条件の追加&quot; でIP制限などを追加<br>
+<strong>条件の追加（オプション）</strong></li>
+<li>条件: IpAddress</li>
+<li>キー: aws:SoruceIp</li>
+<li>値: [IPADDRESS], [IPADDRESS], [IPADDRESS], ...</li>
+</ul>
+<ol class="simple">
+<li>[次のステップへ] を選択</li>
+<li><strong>ポリシー名</strong> と、必要に応じて <strong>説明</strong> を入力し、ポリシーの作成を選択</li>
+</ol>
+</div>
+<div class="section" id="">
+<span id="id2"></span><h3>ポリシーのアタッチとアクセス確認<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>先に作成していた グループ または アカウント に作成したポリシーをアタッチする。</p>
+<p>必要に応じて <a class="reference external" href="https://cyberduck.io/">Cyberduck</a> を利用しアクセス確認を行う。</p>
+<ol class="simple">
+<li><a class="reference external" href="https://cyberduck.io/">公式サイト</a>からダウンロード</li>
+<li>起動し、新規接続を選択</li>
+<li>接続先として <strong>S3</strong>を選択, <strong>アクセスキー ID</strong>, <strong>シークレットアクセスキー</strong>, パスにアクセスを許可した <strong>S3バケット名</strong> を入力し接続 (例: /example-bucket/ )</li>
+<li>読み書き削除などが行える事を確認</li>
+</ol>
+</div>
+</div>
+<div class="section" id="ec2-awscli">
+<span id="ec2-awscli"></span><h2>EC2インスタンス/awscliの設定<a class="headerlink" href="#ec2-awscli" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>ログアーカイブを行うEC2インスタンス上で、awscli を使えるようにする。</p>
+<div class="section" id="awscli">
+<span id="awscli"></span><h3>awscli の設定<a class="headerlink" href="#awscli" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>EC2インスタンス上でログ操作を行うユーザアカウントで awscli を設定する。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> vi ~/.bashrc
+<span class="gp">  #</span><span class="c1"># awscli completer</span>
+<span class="go">  complete -C &#39;/usr/bin/aws_completer&#39; aws</span>
+<span class="gp">$</span> <span class="nb">source</span> .bashrc
+<span class="gp">$</span> aws configure
+<span class="go">  AWS Access Key ID [None]: [アクセスキー ID]</span>
+<span class="go">  AWS Secret Access Key [None]: [シークレットキー]</span>
+<span class="go">  Default region name [None]: ap-northeast-1</span>
+<span class="go">  Default output format [None]: json</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="awscli">
+<span id="id3"></span><h3>awscli の動作確認<a class="headerlink" href="#awscli" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>awscli を利用して、S3の操作が出来る事を確認</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> touch <span class="nb">test</span>
+<span class="gp">$</span> aws s3 cp <span class="nb">test</span> s3://<span class="o">[</span>バケット名<span class="o">]</span>/test
+<span class="gp">$</span> aws s3 rm s3://<span class="o">[</span>バケット名<span class="o">]</span>/test
+</pre></div>
+</div>
+<p>ポイントとして</p>
+<ul class="simple">
+<li>ディレクトリではなく、オブジェクト単位の管理</li>
+<li>ディレクトリ内のファイルがなくなれば、ディレクトリ(オブジェクトもなくなる)</li>
+</ul>
+<p>awscli のオプション/ヘルプについては[TAB補完]か末尾に&quot;help&quot;を付ける事で参照出来る。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> aws s3 <span class="o">[</span>TAB<span class="o">]</span>
+<span class="go">cp        ls        mb        mv        rb        rm        sync      website</span>
+<span class="gp">#</span> aws s3 sync <span class="nb">help</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id4"></span><h2>ログのアーカイブのテスト<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>/etc/logrotate.d/ 配下の設定で、postrotate に以下のような設定を加える。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>...
+    postrotate
+        <span class="nv">LOGNAME</span><span class="o">=</span><span class="s2">&quot;messages-</span><span class="k">$(</span>date +%Y%m%d<span class="k">)</span><span class="s2">&quot;</span>
+        <span class="nv">MAILBODY</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>hostname<span class="k">)</span><span class="s2"> - </span><span class="k">$(</span>hostname -i<span class="k">)</span><span class="s2">\nAWS logrotation error\n</span><span class="si">${</span><span class="nv">LOGNAME</span><span class="si">}</span><span class="s2"> not archived.&quot;</span>
+        <span class="nv">SENDTO</span><span class="o">=</span><span class="s2">&quot;ec2-user&quot;</span>
+        aws s3 cp /var/log/<span class="si">${</span><span class="nv">LOGNAME</span><span class="si">}</span> s3://<span class="o">[</span>バケット名<span class="o">]</span>/<span class="k">$(</span>hostname<span class="k">)</span>/<span class="k">$(</span>date +%Y<span class="k">)</span>/<span class="k">$(</span>date +%m<span class="k">)</span>/ <span class="p">;</span> <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> !<span class="o">=</span> <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span> <span class="nb">echo</span> -e <span class="si">${</span><span class="nv">MAILBODY</span><span class="si">}</span> <span class="p">|</span> mail -s <span class="s2">&quot;AWS: </span><span class="k">$(</span>hostname<span class="k">)</span><span class="s2"> S3 Log archive ERROR!!!&quot;</span> <span class="si">${</span><span class="nv">SENDTO</span><span class="si">}</span> <span class="p">;</span> <span class="k">fi</span>
+        ...
+    endscript
+</pre></div>
+</div>
+<p>各種動作確認を行い、ログが送られる事を確認</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo logrotate -f /etc/logrotate.configure
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, pochio.<br/>
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5 で生成しました。<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

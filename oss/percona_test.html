@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Percona XtraDB Cluster メモ &mdash; MEMO</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.3.4/darkly/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="MEMO" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">OSS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html">ATOMエディタメモ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../linux/index.html">RHEL/CentOS/Fedora</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../aws/index.html">AWS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../aws/s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aws/lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Percona XtraDB Cluster メモ</a><ul>
+<li><a class="reference internal" href="#url">参考URL</a></li>
+<li><a class="reference internal" href="#percona-xtradb-cluster">Percona XtraDB Cluster のドキュメント斜め読み</a></li>
+<li><a class="reference internal" href="#state-snapshot-transfer-sst-incremental-state-transfer-ist">State Snapshot Transfer(SST) と、Incremental State Transfer (IST) について</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#percona-xtradb-cluster">Percona XtraDB Cluster　の動作確認メモ</a><ul>
+<li><a class="reference internal" href="#">環境初期化手順</a></li>
+<li><a class="reference internal" href="#">メモリについて</a></li>
+<li><a class="reference internal" href="#">試験環境</a><ul>
+<li><a class="reference internal" href="#mysql-bootstrap">mysql&#64;bootstrap ノードの動作確認</a></li>
+<li><a class="reference internal" href="#">クラスタ障害</a><ul>
+<li><a class="reference internal" href="#">ノードの縮退と復旧</a></li>
+<li><a class="reference internal" href="#bootstrap">全ノードの停止 と &#8220;bootstrap&#8221;実行ノードの変更</a></li>
+<li><a class="reference internal" href="#">ノード疎通障害時の動作確認</a><ul>
+<li><a class="reference internal" href="#">単体ノードの一時的な疎通障害</a></li>
+<li><a class="reference internal" href="#">疎通障害とデータ書き込み時の確認</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- レスポンシブ#4 - Memo Header -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7388673814498168"
+     data-ad-slot="2038132674"
+     data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="percona-xtradb-cluster">
+<span id="percona-xtradb-cluster"></span><h1>Percona XtraDB Cluster メモ<a class="headerlink" href="#percona-xtradb-cluster" title="Permalink to this headline">¶</a></h1>
+<p>ドキュメントを読んで、適当にポイントだけメモした。英語知らん人が翻訳エンジンを利用しながらメモったので、間違えていたりしても許してちょ(´Д⊂ヽ</p>
+<div class="section" id="url">
+<span id="url"></span><h2>参考URL<a class="headerlink" href="#url" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://learn.percona.com/download-percona-xtradb-cluster-5-6-manual">Percona XtraDB Cluster Manual</a></li>
+</ul>
+</div>
+<div class="section" id="percona-xtradb-cluster">
+<span id="id1"></span><h2>Percona XtraDB Cluster のドキュメント斜め読み<a class="headerlink" href="#percona-xtradb-cluster" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>推奨は３ノード構成から (２ノードでも組む事は出来るらしいが、恐らくQUORUM方式のクラスタのため１台死亡でもう１台が・・・とか考えてたら<a class="reference external" href="https://www.percona.com/blog/2012/07/25/percona-xtradb-cluster-failure-scenarios-with-only-2-nodes/">ブログに書いてた</a>)</li>
+<li>MySQL/Perconaサーバからクラスターノードにコンバートする事も出来る。その逆もしかり。</li>
+<li>各ノードはデータのフルコピーを保持している。</li>
+<li>中央管理の仕組みはない。あるノードが死んでも生きてるのがいればクラスタは継続する。</li>
+<li>リードはスケールするけど、ライトはスケールしない。</li>
+<li>新しいノードが追加されたらフルコピーが発生する。(DBが100GBあれば100GB分のコピーが・・・)</li>
+<li>3ノード=3重複でデータを保持する事になる。</li>
+<li>マルチマスターレプリケーションには Codership Oy. 社の Galera library, version 3.x を使っている。</li>
+<li>クエリ・ログをテーブルに保存する事は出来ない。ファイルを指定すること。</li>
+<li>最大トランザクションサイズは wsrep_max_ws_rows と wsrep_max_ws_size 変数で設定する。 LOAD DATA INFILE は、常に 10K 行をコミットする。負荷に起因する大きなトランザクションデータは、小さなトランザクションに分割される。</li>
+<li></li>
+<li>レプリケーションをサポートしているのは InnoDB だけ。 MyISAM は experimental なので非推奨</li>
+<li>mysql.* テーブルはレプリケーションされない。DDLステートメントはステートメントレベルでレプリケートされる。すなわち安全に運用するのであれば CREATE USER 〜などがベターであり、INSERT INTO mysql.user〜はレプリケートされないのでやめとけ。</li>
+<li>LOCK/UNLOCK TABLES, lock function(GET_LOCK())などはサポートしてない</li>
+<li>1つのノードが遅いと、クラスタ全体が影響を受ける。ハードウェアをアップグレードするなりする。</li>
+<li>クラスタとして動作している時に ALTER TABLE, IMPORT/EXPORT は推奨しない。変更が単体ノードにしか反映されない恐れがある(原文の cluster mode の意味がわからないが、恐らくbootstrapで起動した単体ノードの状態であれば問題おｋという事かも)(ALTER TABLEについては<a class="reference external" href="https://yakst.com/ja/posts/3362">Percona Toolkitを使えば良いような話もあり</a>)</li>
+<li>その他制約については <a class="reference external" href="https://www.percona.com/doc/percona-xtradb-cluster/5.6/limitation.html">1.2 Percona XtraDB Cluster Limitations</a> を参照</li>
+<li>ファイヤウォールへの穴あけ: 3306, 4444, 4567 and 4568</li>
+<li>SELinux/AppArmor などは無効にすること。</li>
+</ul>
+</div>
+<div class="section" id="state-snapshot-transfer-sst-incremental-state-transfer-ist">
+<span id="state-snapshot-transfer-sst-incremental-state-transfer-ist"></span><h2>State Snapshot Transfer(SST) と、Incremental State Transfer (IST) について<a class="headerlink" href="#state-snapshot-transfer-sst-incremental-state-transfer-ist" title="Permalink to this headline">¶</a></h2>
+<p>クラスタ間のデータ同期には State Snapshot Transfer (以下SST) が利用される。SSTは mysqldump, rsync, xtrabackup の３つのメソッドから１つを選択できる。ただし mysqldump, rsync はデータ同期の間クラスタが READ ONLY になる。 xtrabackup は .frm というバックアップファイルを利用した同期行うので READ ONLY にはならない。既定では xtrabackup を利用する。</p>
+<p>ノードがダウン・復旧した場合、Incremental State Transfer (IST) によりデータの同期が行われる。各ノードはDatabaseの変更をキャッシュ・リングバッファで保持しており、それを用いて変更点Nからのデータを同期を行う。ただし転送量がNを超えた場合はSSTによるフル・データ同期が行われる。</p>
+<p>※Nってなに。。</p>
+<p>各ノードの状態は以下で確認できる。
+SHOW STATUS LIKE &#8216;wsrep_local_state_comment&#8217;;</p>
+</div>
+</div>
+<div class="section" id="percona-xtradb-cluster">
+<span id="id2"></span><h1>Percona XtraDB Cluster　の動作確認メモ<a class="headerlink" href="#percona-xtradb-cluster" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="">
+<span id="id3"></span><h2>環境初期化手順<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>全ノードのサービスを停止</li>
+<li>&#8220;/var/lib/mysql&#8221; 配下の全ファイルを削除</li>
+<li>１台目のサーバで&#8221;mysql&#64;bootstrap&#8221;で起動</li>
+<li>アカウントの作成 &#8216;root/sstuser&#8217;</li>
+<li>他ノードでサービスを開始</li>
+</ul>
+</div>
+<div class="section" id="">
+<span id="id4"></span><h2>メモリについて<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h2>
+<p>低スペックなVMで試験をしようとしたら &#8220;Cannot allocate memory&#8221; という出力が出て Percona が起動しなくなった。SWAP追加を推奨 ※service+100MB程度のメモリが必要？？</p>
+</div>
+<div class="section" id="">
+<span id="id5"></span><h2>試験環境<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>全ノード起動済み</li>
+<li>percona1   ... mysql&#64;bootstrap　で起動したノード</li>
+<li>percona2,3 ... mysql で起動したノード</li>
+</ul>
+<hr class="docutils" />
+<div class="section" id="mysql-bootstrap">
+<span id="mysql-bootstrap"></span><h3>mysql&#64;bootstrap ノードの動作確認<a class="headerlink" href="#mysql-bootstrap" title="Permalink to this headline">¶</a></h3>
+<p><b>percona1</b></p>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl stop mysql@bootstrap
+<span class="gp">#</span> systemctl start mysql
+<span class="gp">#</span> systemctl stop mysql
+<span class="gp">#</span> systemctl start mysql
+</pre></div>
+</div>
+<p><b>結果:</b>&#8220;mysql&#64;bootstrap&#8221; での起動はクラスタが停止していた時にのみ必要、クラスタが稼働していれば bootstrap で起動したノードも &#8220;mysql&#8221; でいける</p>
+<p><b>運用:</b>クラスタ起動後、一度 mysql&#64;bootstrap の停止・起動を行い、全ノードが同一手順で起動・停止出来る状態にしておいた方が良いかも。。</p>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl stop mysql@bootstrap
+<span class="gp">#</span> systemctl start mysql
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="">
+<span id="id6"></span><h3>クラスタ障害<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="">
+<span id="id7"></span><h4>ノードの縮退と復旧<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h4>
+<ol class="simple">
+<li>percona1 の停止</li>
+</ol>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl stop mysql
+</pre></div>
+</div>
+<ol class="simple">
+<li>percona2 の停止</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># systemctl stop mysql</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li>percona3 にて新規DBの作成</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span>mysql&gt; show status like &#39;wsrep%&#39;;
+  =&gt;&quot;1,2&quot; が切り離されていること。cluster_status,reday が正常な事を確認
+mysql&gt; CREATE DATABASE underboob;
+</pre></div>
+</div>
+<ol class="simple">
+<li>percona2 の起動</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span># systemctl start mysql
+...
+mysql&gt; show databases;   #&lt;-&quot;underboob&quot;が同期されている事を確認
+</pre></div>
+</div>
+<ol class="simple">
+<li>percona1 の起動</li>
+</ol>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl start mysql
+<span class="go">...</span>
+<span class="go">mysql&gt; show databases;   #&lt;-&quot;underboob&quot;が同期されている事を確認</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="bootstrap">
+<span id="bootstrap"></span><h4>全ノードの停止 と &#8220;bootstrap&#8221;実行ノードの変更<a class="headerlink" href="#bootstrap" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="go">percona1の停止: # systemctl stop mysql</span>
+<span class="go">percona2の停止: # systemctl stop mysql</span>
+<span class="go">percona3の停止: # systemctl stop mysql</span>
+</pre></div>
+</div>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="go">percona2: systemctl start mysql@bootstrap</span>
+<span class="go">percona3: systemctl start mysql</span>
+<span class="go">percona1: systemctl start mysql</span>
+</pre></div>
+</div>
+<p>mysqlへのアクセス、DB &#8220;underboob&#8221; などが見れる事を確認</p>
+<p>&#8220;bootstrap&#8221; で起動した percona2 を停止・起動してみる。<b>percona2:</b></p>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl stop mysql@bootstrap
+<span class="gp">#</span> systemctl start mysql
+<span class="go">...</span>
+<span class="go">mysql&gt; show status like &#39;wsrep%&#39;;</span>
+<span class="go">  =&gt;参加ノードとクラスタが正常な事を確認</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id8"></span><h4>ノード疎通障害時の動作確認<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="">
+<span id="id9"></span><h5>単体ノードの一時的な疎通障害<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h5>
+<p>percona2 にて簡単なスクリプトを作成</p>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> vi ifdown.sh
+</pre></div>
+</div>
+<p>以下、ifdown.sh の内容</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>#!/bin/bash
+ifdown eth0
+sleep 60
+ifup eth0
+</pre></div>
+</div>
+<p>実行権限の付与と実行</p>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> chmod +x ifdown.sh
+<span class="gp">#</span> nohup ./ifdown.sh <span class="p">&amp;</span>
+</pre></div>
+</div>
+<p>スクリプト実行後、他ノードにてクラスタの状況を確認、percona2 がクラスタから外れるが復旧した事を確認</p>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="go">...</span>
+<span class="go">mysql&gt; show status like &#39;wsrep%&#39;;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id10"></span><h5>疎通障害とデータ書き込み時の確認<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h5>
+<p>上記で作成したスクリプトに修正を加え、疎通障害時にデータを書き込みどうなるのか確認</p>
+<p><b>percona2</b></p>
+<div class="highlight-shell-session"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> ~
+<span class="gp">#</span> <span class="nb">echo</span> <span class="s2">&quot;CREATE DATABASE chippai;&quot;</span> &gt; hoge.sql
+<span class="gp">#</span> vi ifdown.sh
+<span class="go">...</span>
+<span class="go">sleep 60</span>
+<span class="go">MYSQL_PWD=Passw0rd mysql -u root &lt; hoge.sql</span>
+<span class="go">sleep 60</span>
+<span class="go">...</span>
+<span class="gp">#</span> nohup ./ifdown.sh <span class="p">&amp;</span>
+</pre></div>
+</div>
+<p>切れたノードの情報はクラスタには反映されず、かつ再接続したノードの情報がクラスタと同様であることを確認</p>
+<p>また切断中にクラスタ上で変更した内容が、再接続したノードに反映された事を確認した。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016, .<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.</br>
+    <div style="text-align: center;">
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-7388673814498168"
+            data-ad-slot="4273575478"
+            data-ad-format="auto"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+        <br>
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <!-- レスポンシブ#5 - Memo Footer#2 -->
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-7388673814498168"
+            data-ad-slot="5796374274"
+            data-ad-format="auto"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

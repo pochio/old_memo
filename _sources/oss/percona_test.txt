@@ -1,0 +1,204 @@
+
+# Percona XtraDB Cluster メモ
+
+ドキュメントを読んで、適当にポイントだけメモした。英語知らん人が翻訳エンジンを利用しながらメモったので、間違えていたりしても許してちょ(´Д⊂ヽ
+
+## 参考URL
+
+- [Percona XtraDB Cluster Manual](https://learn.percona.com/download-percona-xtradb-cluster-5-6-manual)
+
+## Percona XtraDB Cluster のドキュメント斜め読み
+
+- 推奨は３ノード構成から (２ノードでも組む事は出来るらしいが、恐らくQUORUM方式のクラスタのため１台死亡でもう１台が・・・とか考えてたら[ブログに書いてた](https://www.percona.com/blog/2012/07/25/percona-xtradb-cluster-failure-scenarios-with-only-2-nodes/))
+- MySQL/Perconaサーバからクラスターノードにコンバートする事も出来る。その逆もしかり。
+- 各ノードはデータのフルコピーを保持している。
+
+- 中央管理の仕組みはない。あるノードが死んでも生きてるのがいればクラスタは継続する。
+- リードはスケールするけど、ライトはスケールしない。
+- 新しいノードが追加されたらフルコピーが発生する。(DBが100GBあれば100GB分のコピーが・・・)
+- 3ノード=3重複でデータを保持する事になる。
+
+- マルチマスターレプリケーションには Codership Oy. 社の Galera library, version 3.x を使っている。
+
+- クエリ・ログをテーブルに保存する事は出来ない。ファイルを指定すること。
+- 最大トランザクションサイズは wsrep_max_ws_rows と wsrep_max_ws_size 変数で設定する。 LOAD DATA INFILE は、常に 10K 行をコミットする。負荷に起因する大きなトランザクションデータは、小さなトランザクションに分割される。
+-
+- レプリケーションをサポートしているのは InnoDB だけ。 MyISAM は experimental なので非推奨
+- mysql.* テーブルはレプリケーションされない。DDLステートメントはステートメントレベルでレプリケートされる。すなわち安全に運用するのであれば CREATE USER 〜などがベターであり、INSERT INTO mysql.user〜はレプリケートされないのでやめとけ。
+- LOCK/UNLOCK TABLES, lock function(GET_LOCK())などはサポートしてない
+- 1つのノードが遅いと、クラスタ全体が影響を受ける。ハードウェアをアップグレードするなりする。
+- クラスタとして動作している時に ALTER TABLE, IMPORT/EXPORT は推奨しない。変更が単体ノードにしか反映されない恐れがある  
+(原文の cluster mode の意味がわからないが、恐らくbootstrapで起動した単体ノードの状態であれば問題おｋという事かも)  
+(ALTER TABLEについては[Percona Toolkitを使えば良いような話もあり](https://yakst.com/ja/posts/3362))
+- その他制約については [1.2 Percona XtraDB Cluster Limitations](https://www.percona.com/doc/percona-xtradb-cluster/5.6/limitation.html) を参照
+
+- ファイヤウォールへの穴あけ: 3306, 4444, 4567 and 4568
+- SELinux/AppArmor などは無効にすること。
+
+## State Snapshot Transfer(SST) と、Incremental State Transfer (IST) について
+
+クラスタ間のデータ同期には State Snapshot Transfer (以下SST) が利用される。SSTは mysqldump, rsync, xtrabackup の３つのメソッドから１つを選択できる。ただし mysqldump, rsync はデータ同期の間クラスタが READ ONLY になる。 xtrabackup は .frm というバックアップファイルを利用した同期行うので READ ONLY にはならない。既定では xtrabackup を利用する。
+
+ノードがダウン・復旧した場合、Incremental State Transfer (IST) によりデータの同期が行われる。各ノードはDatabaseの変更をキャッシュ・リングバッファで保持しており、それを用いて変更点Nからのデータを同期を行う。ただし転送量がNを超えた場合はSSTによるフル・データ同期が行われる。
+
+※Nってなに。。
+
+各ノードの状態は以下で確認できる。
+SHOW STATUS LIKE 'wsrep_local_state_comment';
+
+
+# Percona XtraDB Cluster　の動作確認メモ
+
+## 環境初期化手順
+
+- 全ノードのサービスを停止
+- "/var/lib/mysql" 配下の全ファイルを削除
+- １台目のサーバで"mysql@bootstrap"で起動
+- アカウントの作成 'root/sstuser'
+- 他ノードでサービスを開始
+
+## メモリについて
+
+低スペックなVMで試験をしようとしたら "Cannot allocate memory" という出力が出て Percona が起動しなくなった。SWAP追加を推奨 ※service+100MB程度のメモリが必要？？
+
+## 試験環境
+
+ - 全ノード起動済み
+ - percona1   ... mysql@bootstrap　で起動したノード
+ - percona2,3 ... mysql で起動したノード
+
+---
+
+### mysql@bootstrap ノードの動作確認
+
+<b>percona1</b>
+
+```shell-session
+# systemctl stop mysql@bootstrap
+# systemctl start mysql
+# systemctl stop mysql
+# systemctl start mysql
+```
+
+<b>結果:</b>  
+"mysql@bootstrap" での起動はクラスタが停止していた時にのみ必要、クラスタが稼働していれば bootstrap で起動したノードも "mysql" でいける
+
+<b>運用:</b>  
+クラスタ起動後、一度 mysql@bootstrap の停止・起動を行い、全ノードが同一手順で起動・停止出来る状態にしておいた方が良いかも。。
+```shell-session
+# systemctl stop mysql@bootstrap
+# systemctl start mysql
+```
+
+---
+
+### クラスタ障害
+
+#### ノードの縮退と復旧
+
+1. percona1 の停止
+```shell-session
+# systemctl stop mysql
+```
+2. percona2 の停止
+```
+# systemctl stop mysql
+```
+3. percona3 にて新規DBの作成
+```
+mysql> show status like 'wsrep%';
+  =>"1,2" が切り離されていること。cluster_status,reday が正常な事を確認
+mysql> CREATE DATABASE underboob;
+```
+4. percona2 の起動
+```
+# systemctl start mysql
+...
+mysql> show databases;   #<-"underboob"が同期されている事を確認
+```
+5. percona1 の起動
+```shell-session
+# systemctl start mysql
+...
+mysql> show databases;   #<-"underboob"が同期されている事を確認
+```
+
+#### 全ノードの停止 と "bootstrap"実行ノードの変更
+
+```shell-session
+percona1の停止: # systemctl stop mysql
+percona2の停止: # systemctl stop mysql
+percona3の停止: # systemctl stop mysql
+```
+
+```shell-session
+percona2: systemctl start mysql@bootstrap
+percona3: systemctl start mysql
+percona1: systemctl start mysql
+```
+
+mysqlへのアクセス、DB "underboob" などが見れる事を確認
+
+"bootstrap" で起動した percona2 を停止・起動してみる。  
+<b>percona2:</b>
+```shell-session
+# systemctl stop mysql@bootstrap
+# systemctl start mysql
+...
+mysql> show status like 'wsrep%';
+  =>参加ノードとクラスタが正常な事を確認
+```
+
+#### ノード疎通障害時の動作確認
+
+##### 単体ノードの一時的な疎通障害
+
+percona2 にて簡単なスクリプトを作成
+
+```shell-session
+# vi ifdown.sh
+```
+
+以下、ifdown.sh の内容
+
+```text
+#!/bin/bash
+ifdown eth0
+sleep 60
+ifup eth0
+```
+
+実行権限の付与と実行
+
+```shell-session
+# chmod +x ifdown.sh
+# nohup ./ifdown.sh &
+```
+
+スクリプト実行後、他ノードにてクラスタの状況を確認、percona2 がクラスタから外れるが復旧した事を確認
+
+```shell-session
+...
+mysql> show status like 'wsrep%';
+```
+
+##### 疎通障害とデータ書き込み時の確認
+
+上記で作成したスクリプトに修正を加え、疎通障害時にデータを書き込みどうなるのか確認
+
+<b>percona2</b>
+```shell-session
+# cd ~
+# echo "CREATE DATABASE chippai;" > hoge.sql
+# vi ifdown.sh
+...
+sleep 60
+MYSQL_PWD=Passw0rd mysql -u root < hoge.sql
+sleep 60
+...
+# nohup ./ifdown.sh &
+```
+
+切れたノードの情報はクラスタには反映されず、かつ再接続したノードの情報がクラスタと同様であることを確認
+
+また切断中にクラスタ上で変更した内容が、再接続したノードに反映された事を確認した。

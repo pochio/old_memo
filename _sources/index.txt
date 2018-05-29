@@ -1,0 +1,21 @@
+
+| 
+
+中途半端に調べた事とか忘れないためのメモ ｃ⌒っﾟдﾟ)っφ
+
+.. toctree::
+   :maxdepth: 2
+
+   ./oss/index.rst
+   ./linux/index.rst
+   ./windows/index.rst
+   ./aws/index.rst
+   ./etc/index.rst
+   
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

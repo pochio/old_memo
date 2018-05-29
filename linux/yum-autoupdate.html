@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>yum-cron による自動アップデート &#8212; Memo  ドキュメント</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="Sophos Antivirus for Linux 無償版の導入と設定" href="sophos.html" />
+    <link rel="prev" title="RPMパッケージと、ローカル・リポジトリへの署名方法" href="rpmrepo_gpgsign.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../oss/index.html">OSS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../oss/sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix3.html">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3-on-cloud.html">Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">RHEL/CentOS/Fedora</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../aws/index.html">AWS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../aws/s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aws/lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">yum-cron による自動アップデート</a><ul>
+<li><a class="reference internal" href="#">注意</a><ul>
+<li><a class="reference internal" href="#centos">CentOS の場合</a></li>
+<li><a class="reference internal" href="#amazon-linux">Amazon Linux の場合</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#url">参考URL</a></li>
+<li><a class="reference internal" href="#yum-cron-security-plugin">yum-cron と security plugin のインスコ</a></li>
+<li><a class="reference internal" href="#">設定</a><ul>
+<li><a class="reference internal" href="#rhel-centos7">RHEL/CentOS7の場合</a></li>
+<li><a class="reference internal" href="#rhel6-centos6">RHEL6/CentOS6の場合</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#">サービスの有効化と起動</a><ul>
+<li><a class="reference internal" href="#rhel-centos7">RHEL/CentOS7系の場合</a></li>
+<li><a class="reference internal" href="#rhel-centos6">RHEL/CentOS6系の場合</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="rpmrepo_gpgsign.html" title="Previous Chapter: RPMパッケージと、ローカル・リポジトリへの署名方法"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; RPMパッケージと、ローカ...</span>
+    </a>
+  </li>
+  <li>
+    <a href="sophos.html" title="Next Chapter: Sophos Antivirus for Linux 無償版の導入と設定"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Sophos Antivi... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="yum-cron">
+<span id="yum-cron"></span><h1>yum-cron による自動アップデート<a class="headerlink" href="#yum-cron" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p><a class="reference external" href="http://d.hatena.ne.jp/Kango/20160217/1455725647">例のglibcの祭りの際</a>、Critical なものは自動でアップデートしても良くね？という話がさらりと出てきたので一応メモ</p>
+<div class="section" id="">
+<span id="id1"></span><h2>注意<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="centos">
+<span id="centos"></span><h3>CentOS の場合<a class="headerlink" href="#centos" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>&quot;yum-security-plugin&quot; はCentOSでは動かない模様・・・残念。。</p>
+<p><a class="reference external" href="https://www.centos.org/forums/viewtopic.php?f=13&amp;t=54597">https://www.centos.org/forums/viewtopic.php?f=13&amp;t=54597</a></p>
+<p><font size="2">
+The yum-plugin-security package does not work on CentOS and there have been several long and involved threads on the mailing list discussing this and the outcome is that it probably never will. The required metadata is not present in the CentOS yum repositories to allow it to function. EPEL does supply this data which is why you see some mentions of security updates available but it does not cover any of the packages in the CentOS repos.
+</font></p>
+</div>
+<div class="section" id="amazon-linux">
+<span id="amazon-linux"></span><h3>Amazon Linux の場合<a class="headerlink" href="#amazon-linux" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>リスクレベルの指定(--sec-severity)は動作しなかったけど、&quot;--security&quot; でセキュリティに限定したパッケージアップデートは可能なようだった。</p>
+</div>
+</div>
+<div class="section" id="url">
+<span id="url"></span><h2>参考URL<a class="headerlink" href="#url" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://access.redhat.com/ja/solutions/207493">RHN:yum を制限して、セキュリティアップデートだけを一覧表示してインストールできますか?</a></li>
+<li><a class="reference external" href="https://access.redhat.com/documentation/ja-JP/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/sec-Plugin_Descriptions.html">RHEL6:導入ガイド-6.4.3. プラグインの詳細</a></li>
+<li><a class="reference external" href="http://dev.classmethod.jp/server-side/os/yum-plugin-security/">Yumのセキュリティプラグイン</a></li>
+</ul>
+</div>
+<div class="section" id="yum-cron-security-plugin">
+<span id="yum-cron-security-plugin"></span><h2>yum-cron と security plugin のインスコ<a class="headerlink" href="#yum-cron-security-plugin" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>ヤッムヤッム！！(　ﾟ∀ﾟ)o彡°</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install yum-cron yum-plugin-security
+</pre></div>
+</div>
+<p>※RHEL7系の場合 &quot;yum-plugin-security&quot; はなくなり統合されてる？模様</p>
+</div>
+<div class="section" id="">
+<span id="id2"></span><h2>設定<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>さっくり書き換えるだけ。</p>
+<div class="section" id="rhel-centos7">
+<span id="rhel-centos7"></span><h3>RHEL/CentOS7の場合<a class="headerlink" href="#rhel-centos7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> /etc/yum/
+<span class="gp">#</span> cp yum-cron.conf<span class="o">{</span>,.orig<span class="o">}</span>
+<span class="gp">#</span> vi yum-cron.conf
+</pre></div>
+</div>
+<p>変更点だけ列挙</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>## リスクレベル Critical のものだけ適用、 ★CentOSの場合は &quot;default&quot; のままにする。
+update_cmd = minimal-security-severity:Critical
+
+## 自動的に適用
+apply_updates = yes
+
+## システム名
+system_name = Underboob
+
+## メール送信元/宛先アドレス
+email_from = root@localhost
+email_to = root
+</pre></div>
+</div>
+</div>
+<div class="section" id="rhel6-centos6">
+<span id="rhel6-centos6"></span><h3>RHEL6/CentOS6の場合<a class="headerlink" href="#rhel6-centos6" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> /etc/sysconfig
+<span class="gp">#</span> cp yum-cron<span class="o">{</span>,.orig<span class="o">}</span>
+<span class="gp">#</span> vi yum-cron
+</pre></div>
+</div>
+<p>変更点だけ列挙</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>## リスクレベル Critical のものだけ適用、CentOSの場合は &quot;update&quot; にする。
+YUM_PARAMETER=&quot;--sec-severity=Critical update-minimal&quot;
+
+## メール送信先
+MAILTO=root
+
+## システム名
+SYSTEMNAME=&quot;Underboob&quot;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id3"></span><h2>サービスの有効化と起動<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="rhel-centos7">
+<span id="id4"></span><h3>RHEL/CentOS7系の場合<a class="headerlink" href="#rhel-centos7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl <span class="nb">enable</span> yum-cron
+<span class="gp">#</span> systemctl start yum-cron
+</pre></div>
+</div>
+</div>
+<div class="section" id="rhel-centos6">
+<span id="rhel-centos6"></span><h3>RHEL/CentOS6系の場合<a class="headerlink" href="#rhel-centos6" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> chkconfig yum-cron on
+<span class="gp">#</span> servie yum-cron start
+</pre></div>
+</div>
+<p>以上</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, pochio.<br/>
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5 で生成しました。<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

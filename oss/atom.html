@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ATOMエディタメモ &mdash; MEMO</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.3.4/darkly/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="MEMO" href="../index.html" />
+    <link rel="up" title="OSS" href="index.html" />
+    <link rel="next" title="GNS3 (Graphical Network Simulator)" href="gns3.html" />
+    <link rel="prev" title="Sphinx" href="sphinx.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">OSS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="sphinx.html">Sphinx</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">ATOMエディタメモ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix3.html">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../linux/index.html">RHEL/CentOS/Fedora</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../aws/index.html">AWS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../aws/s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aws/lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">ATOMエディタメモ</a><ul>
+<li><a class="reference internal" href="#">導入したプラグイン</a></li>
+<li><a class="reference internal" href="#restructuredtext">reStructuredText 対応</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="sphinx.html" title="Previous Chapter: Sphinx"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Sphinx</span>
+    </a>
+  </li>
+  <li>
+    <a href="gns3.html" title="Next Chapter: GNS3 (Graphical Network Simulator)"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">GNS3 (Graphic... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- レスポンシブ#4 - Memo Header -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7388673814498168"
+     data-ad-slot="2038132674"
+     data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="atom">
+<span id="atom"></span><h1>ATOMエディタメモ<a class="headerlink" href="#atom" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="">
+<span id="id1"></span><h2>導入したプラグイン<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>atom-html-preview</li>
+<li>atom-runner</li>
+<li>file-type-icons</li>
+<li>markdown-writer</li>
+<li>pigments</li>
+<li>minimap</li>
+<li>emmet</li>
+<li>color-picker</li>
+<li>atom-beautify</li>
+<li>activate-power-mode<ul>
+<li>楽しいけどVirtualBox+Fedora上のAtomだと重い。。</li>
+</ul>
+</li>
+<li>git-puls</li>
+<li>marge-conflict</li>
+</ul>
+</div>
+<div class="section" id="restructuredtext">
+<span id="restructuredtext"></span><h2>reStructuredText 対応<a class="headerlink" href="#restructuredtext" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>pandoc (yum/dnf install)</li>
+<li>language-restructuredtext</li>
+<li>rst-preview-pandoc</li>
+</ul>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016, .<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.</br>
+    <div style="text-align: center;">
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-7388673814498168"
+            data-ad-slot="4273575478"
+            data-ad-format="auto"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+        <br>
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <!-- レスポンシブ#5 - Memo Footer#2 -->
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-7388673814498168"
+            data-ad-slot="5796374274"
+            data-ad-format="auto"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

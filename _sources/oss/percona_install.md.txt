@@ -1,0 +1,213 @@
+# Percona XtraDB Cluster のインストール手順
+
+よきように調べてと言われたので、とりあえず先んじて導入手順をメモ(´・ω・\`)
+
+## 参考URL
+
+- [Percona XtraDB Cluster:Percona yum Repository ](https://www.percona.com/doc/percona-xtradb-cluster/5.6/installation/yum_repo.html)
+- [Percona XtraDB Cluster Manual](https://learn.percona.com/download-percona-xtradb-cluster-5-6-manual)
+
+## 導入環境
+
+- 推奨３台構成以上のようなのでAWS/EC2インスタンスで３台構築する
+- CentOS7 (2016/03/08時点で更新)
+- セキュリティポリシーでローカルセグメントの TCP/3306,4444,4567,4568 を開放
+- SELinuxは無効化(disabled)、firewalldは最初から入ってない状態
+- /etc/hosts に下記内容を設定　
+  ```
+  10.0.3.10     percona1 percona1.localdomain
+  10.0.3.11     percona2 percona2.localdomain
+  10.0.3.12     percona3 percona3.localdomain
+  ```
+
+## Percona XtraDB Cluster の構築
+
+### レポジトリの追加とインストール
+
+テンプレート化する1台目のEC2インスタンスでPerconaのインストールを行う。インストールは[公式のレポジトリ](https://www.percona.com/doc/percona-xtradb-cluster/5.6/installation/yum_repo.html)を利用、また依存関係でEPELレポジトリも有効にする。
+
+```shell-session
+$ sudo su -
+# yum install epel-release -y
+# yum install  http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm -y
+# yum --enablerepo=epel install Percona-XtraDB-Cluster-56 -y
+```
+
+#### １台目(percona1)の初期設定
+
+##### my.cnf の編集
+
+percona1/10.0.3.10 の "my.cnf" に下記設定を行う。
+
+```shell-session
+# cp /etc/my.cnf{,.`date +%Y%m%d`}
+# vi my.cnf
+```
+
+Clusterに関する設定を追記する。
+
+```text
+[mysqld]
+...
+wsrep_cluster_address          = gcomm://10.0.3.10,10.0.3.11,10.0.3.12
+wsrep_provider                 = /usr/lib64/galera3/libgalera_smm.so
+
+wsrep_node_name                = Node1
+wsrep_node_address             = 10.0.3.10
+
+wsrep_slave_threads            = 8
+wsrep_cluster_name             = Cluster
+
+innodb_locks_unsafe_for_binlog = 1
+innodb_autoinc_lock_mode       = 2
+
+binlog_format                  = ROW
+default_storage_engine         = InnoDB
+
+wsrep_sst_method               = xtrabackup-v2
+wsrep_sst_auth                 = "sstuser:s3cret"
+```
+
+##### サービスの起動と動作確認
+
+サービスを起動し、設定を確認
+
+```shell-session
+# systemctl start mysql@bootstrap
+# mysql
+mysql> show status like 'wsrep%';
+...
+```
+
+##### アカウントの設定
+
+MySQL/root へのパスワード設定
+
+```
+mysql> UPDATE mysql.user SET password=PASSWORD("Passw0rd") where user='root';
+mysql> FLUSH PRIVILEGES;
+```
+
+SST(State Snapshot Transfer)ユーザの作成・権限の付与など。　SSTに関してはMySQL/rootユーザでも設定出来るが、rootとは異なるユーザでの設定が推奨とのこと。
+
+```
+mysql> CREATE USER 'sstuser'@'localhost' IDENTIFIED BY 's3cret';
+mysql> GRANT RELOAD, LOCK TABLES, REPLICATION CLIENT ON *.* TO 'sstuser'@'localhost';
+mysql> FLUSH PRIVILEGES;
+mysql> quit
+```
+
+#### Percona1 の停止->AMI作成->起動
+
+AMI化するためにシャットダウンする。
+
+```shell-session
+# shutdown -h now
+```
+
+AWS/EC2の画面で、イメージの作成(AMI化)し、Percona1 を再度起動する。起動完了後、手動でサービスを起動しておく (クラスタが停止->再稼働する場合、１台目のノードは"bootstrap"付けて起動するものっぽい。 / [https://www.percona.com/doc/percona-xtradb-cluster/5.6/manual/bootstrap.html](https://www.percona.com/doc/percona-xtradb-cluster/5.5/manual/bootstrap.html))
+
+```shell-session
+$ sudo systemctl start mysql@bootstrap
+```
+
+### Percona2 の作成と起動
+
+AMIを元に Percona2 を作成後、以下の作業を続ける。
+
+#### my.cnf の編集
+
+Percona2の環境(IP)に合わせて、my.cnf を編集する。
+
+```shell-session
+$ sudo su -
+# vi my.cnf
+...
+wsrep_node_name                = Node2
+wsrep_node_address             = 10.0.3.11
+```
+
+#### MySQLサービスの起動と動作確認
+
+１台目がすでに稼働しているので、普通にmysqlとして起動する。
+
+```shell-session
+# systemctl start mysql
+# mysql -u root -p
+```
+
+クラスター構成が組めている事を確認
+
+```shell-session
+mysql> show status like 'wsrep%';
+...
+wsrep_incoming_addresses     | 10.0.3.11:3306,10.0.3.10:3306
+wsrep_cluster_status         | Primary
+wsrep_ready                  | ON
+mysql> quit
+```
+
+### Percona3 の作成と起動
+
+AMIを作成し、Percona2 と同様の手順でクラスタに組み込む
+
+```shell-session
+$ sudo su -
+# vi my.cnf
+...
+wsrep_node_name                = Node3
+wsrep_node_address             = 10.0.3.12
+# systemctl start mysql
+# mysql -u root -p
+mysql> show status like 'wsrep%';
+...
+wsrep_incoming_addresses     | 10.0.3.11:3306,10.0.3.12:3306,10.0.3.10:3306
+wsrep_cluster_status         | Primary
+wsrep_ready                  | ON
+mysql> quit
+```
+
+### レプリケーションのテスト
+
+以下、プロンプトに注意 (複数のサーバで分割してコマンドを投入し動作を確認している)
+
+２台目でデータベース "percona" を作成
+
+```shell-session
+mysql@percona2> CREATE DATABASE percona;
+...
+```
+
+３台目でデータベースが出来ている(同期されている)事を確認、テーブルを作成する。
+
+```shell-session
+mysql@percona3> show database;
+...
+| percona            |
+mysql@percona3> USE percona;
+mysql@percona3> CREATE TABLE example (node_id INT PRIMARY KEY, node_name VARCHAR(30));
+```
+
+１台目でテーブルが見れる事を確認、テーブルにデータを投下
+
+```shell-session
+mysql@percona1> show tables from percona;
++-------------------+
+| Tables_in_percona |
++-------------------+
+| example           |
++-------------------+
+1 row in set (0.00 sec)
+
+mysql@percona1> INSERT INTO percona.example VALUES (1, 'percona1');
+```
+
+２台目でデータが見れる事を確認
+
+```shell-session
+mysql@percona2> SELECT * FROM percona.example;
+```
+
+実際にはもっとテストしないといけない事が沢山あるのだけど、とりあえず面白そうだ(´∀｀∩)・・・英語のドキュメント読もう。。
+
+以上

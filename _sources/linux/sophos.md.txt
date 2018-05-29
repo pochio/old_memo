@@ -1,0 +1,239 @@
+
+# Sophos Antivirus for Linux 無償版の導入と設定
+
+Sophos Antivirus for Linux のバージョン 9.x からローカルのGUIが無くなったと聞いたので、無償版で導入と設定手順について確認してみた。
+
+## 参考URL
+
+- [Sophos Antivirus for Linux (無償版)](https://www.sophos.com/ja-jp/products/free-tools/sophos-antivirus-for-linux.aspx)
+- [ドキュメント](https://www.sophos.com/ja-jp/support/documentation/sophos-anti-virus-for-linux.aspx#)
+
+## 統合管理について
+
+単体でのGUIはなくなったが、EnterpiseConsole および SophosCloud 経由での管理は出来るらしい。**ただし EnterpriseConsole は WindowsServer版しか提供されてない** <font size="2">(なんでやねん。。)</font>
+
+## 検証環境について
+
+- KVM仮想ゲスト
+- CentOS7.x
+- Minimalインストール
+- firewalld/SELinuxは無効化、ほかの設定はデフォルトのまま
+- 2016/02/23時点のアップデートを適用
+
+## インストール
+
+[公式サイト](https://www.sophos.com/ja-jp/products/free-tools/sophos-antivirus-for-linux.aspx)からtgzファイルをダウンロードし、適当にインストールを行う。
+
+```shell-session
+# tar zxvf sav-linux-free-9.tgz
+# ./sophos-av/install.sh
+```
+
+### インストール実行例
+
+```text
+Sophos Anti-Virus
+=================
+Copyright (c) 1989-2015 Sophos Limited. All rights reserved.
+
+Sophos Anti-Virus インストーラへようこそ。Sophos Anti-Virus には、オンアクセススキャナ、オンデマンドコマンドラインスキャナ、Sophos Anti-Virus デーモン、および Sophos Anti-Virus GUI があります。
+
+オンアクセススキャナ         ファイルがアクセスされると検索し、未感染の場合のみアクセスを許可
+オンデマンドスキャナ         コンピュータの全体または一部を直ちに検索
+Sophos Anti-Virus デーモン  Sophos Anti-Virus にコントロール、ログ、メール警告機能を提供するバックグラウンドプロセス
+Sophos Anti-Virus GUI        Web ブラウザ経由でアクセスするユーザーインターフェース
+
+
+「Enter」キーを押して、使用許諾契約書を表示してください。そして、<spc> を押してスクロールダウンしてください。 [ENTER]
+
+(中略)
+
+ライセンス内容に同意しますか？ はい(Y)/いいえ(N) [N]
+> y
+
+Sophos Anti-Virus のインストール先を指定してください。 [/opt/sophos-av]
+> [ENTER]
+
+オンアクセス検索を有効にしますか？ はい(Y)/いいえ(N) [Y]
+> [ENTER]
+
+ソフォスは、Sophos Anti-Virus での自動アップデートの設定をお勧めします。
+
+ソフォスから直接アップデートしたり（要アカウント情報）、自社サーバー（ディレクトリや Web サイト（アカウント情報が必要な場合もあります））からアップデートすることができます。
+
+オートアップデートの種類を選択してください: ソフォス(s)/自社サーバー(o)/なし(n) [s]
+> [ENTER]
+
+ソフォスから直接アップデートしています。
+SAV for Linux の無償バージョン (f) と サポート対応付きバージョン (s) のどちらをインストールしますか？ [s]
+> f
+
+Sophos Anti-Virus for Linux の無償バージョンに対して、サポート対応は提供されていません。
+無償ツールのフォーラムは次のサイトを参照してください。http://openforum.sophos.com/
+ソフォスからアップデートを行うためにプロキシが必要ですか？ はい(Y)/いいえ(N) [N]
+> [ENTER]
+
+無償のアップデート用アカウント情報を取得しています。
+Sophos Anti-Virus をインストールしています....
+l適切なカーネルサポートを選択しています...
+Sophos Anti-Virus が起動すると、カーネルサポートを見つけるためアップデートします。 これによって大幅な遅れが発生することがあります。
+Sophos Anti-Virus は、インストール終了後、開始されました。
+
+インストールが完了しました。
+ご使用のコンピュータは Sophos Anti-Virus で保護されるようになりました。
+メールが /var/spool/mail/root にあります
+```
+
+## アップデートの手動実行
+
+本体・エンジン・定義データなどを最新の状態に更新する。既定では 60 分間隔で更新される(らしい)
+
+```shell-session
+# /opt/sophos-av/bin/savupdate
+```
+
+## ログの確認
+
+Sophosの起動・アップデートなど、動作に影響しそうな変なエラーが出ていない事を確認
+
+```shell-session
+# /opt/sophos-av/bin/savlog --today
+```
+
+## 環境設定
+
+詳細はマニュアルを参照、以下は実際に設定した際のメモ。マニュアルでは証明書を作成して〜とあるが、あれは複数端末への展開に用いる為のものでスタンドアロンの場合、基本的に "savconfig" コマンドを用いて **set/add/remove** で各値を設定するだけで良いっぽい。
+
+### 既定値の確認
+
+```shell-session
+# LANG=C ./savconfig -v --advanced
+```
+
+### 圧縮ファイルの検知
+
+```shell-session
+# /opt/sophos-av/bin/savconfig set ScanArchives true
+```
+
+### 感染アイテムの自動駆除
+
+削除の場合は末尾で "delete" をセットする。下記は駆除(disinfect)を指定
+
+```shell-session
+# /opt/sophos-av/bin/savconfig set AutomaticAction disinfect
+```
+
+### 日本語メールによる通知設定
+
+#### メール通知の日本語化
+
+```shell-session
+# /opt/sophos-av/bin/savconfig set EmailLanguage Japanese
+```
+
+#### 送信先アドレスの追加
+
+```shell-session
+# /opt/sophos-av/bin/savconfig add Email oppaioppai@underboob.daisuki
+```
+
+#### 送信者アドレスの設定
+
+```shell-session
+# /opt/sophos-av/bin/savconfig set EmailSender admin@underboob.daisuki
+```
+
+### 特定のファイル/ディレクトリの除外
+
+```shell-session
+# /opt/sophos-av/bin/savconfig add ExcludeFilePaths /tmp
+```
+
+## スケジュールスキャンの設定
+
+サンプルとなるファイルがあるので、それを複製・設定するだけの模様
+
+```shell-session
+# mkdir /opt/sophos-av/schedule
+# cp /opt/sophos-av/doc/namedscan.example.ja /opt/sophos-av/schedule/daily.ja
+# vi /opt/sophos-av/schedule/daily.ja   #<-スケジュール設定
+# /opt/sophos-av/bin/savconfig add NamedScans [スケジュール名] [スケジュールファイル]
+```
+
+## アンインストール
+
+コマンド一発
+
+```shell-session
+# /opt/sophos-av/uninstall.sh
+```
+
+## 追加メモ
+
+仕事で幾つか質問されたのでメモ
+
+###### Q1. Sophosで"eicar"が駆除出来ない
+そもそも eicar はテスト用で害がないのでSophosの駆除対象ではない(と思われる)
+対象としては検知するし、他のオプションは正常に動作しているので問題ないと思う。
+
+```shell-session
+# cd /tmp
+# savscan ./eicar.com --quarantine -rename
+# mkdir sandbox
+# savscan ./eicar.com -move=/tmp/sandbox
+# ls /tmp/sandbox
+eicar.com
+# savscan ./sandbox/eicar.com -remove
+
+--quarantine: パーミッションを 400 へ変更
+-rename: 拡張子変更
+-remove: 削除
+-di: 駆除  #<-検知はするが eicar は駆除対象外
+-move=/tmp: 隔離
+```
+
+###### Q2. メールのホスト名が localhost.localdomain になる。
+sophosから届くメールが　"localhost.localdomain" になるのは、/etc/hosts の 127.0.0.1 行にホスト名を書いている事が原因、127.0.0.1 のとこに書くのをやめるか、hostname.localdomin などの記述に修正すれば直る。
+
+###### Q3. スケジュールスキャン時のCPU負荷率が高い(仮想/1vcpu)
+
+"cpulimit" か "cgroup" で制限すればなんとかなるかも？？(未確認)
+
+```shell-session
+# yum --enablerepo=epel install cpulimit
+# savscan〜
+# nohup cpulimit -z -p <pid> -i -l 25 &
+```
+
+コマンドオプション
+
+```shell-session
+# cpulimit
+Error: You must specify a cpu limit percentage
+Usage: cpulimit [OPTIONS...] TARGET
+   OPTIONS
+      -l, --limit=N          percentage of cpu allowed from 0 to 400 (required)
+      -v, --verbose          show control statistics
+      -z, --lazy             exit if there is no target process, or if it dies
+      -i, --include-children limit also the children processes
+      -h, --help             display this help and exit
+   TARGET must be exactly one of these:
+      -p, --pid=N            pid of the process (implies -z)
+      -e, --exe=FILE         name of the executable program file or path name
+      COMMAND [ARGS]         run this command and limit it (implies -z)
+
+Report bugs to <marlonx80@hotmail.com>.
+```
+
+実装としてはSIGSTOPとSIGCONTでプロセスの停止/再開でうんたん。シンプル・・・  
+https://github.com/opsengine/cpulimit
+
+###### Q4. SophosオンラインスキャンでJavaアプリが遅い
+
+アーカイブスキャンを外す。展開された時点でスキャンされるので、通常なら有効にする必要はないとのこと。
+
+Sophos Anti-Virus for Linux: Performance issues running Java application servers
+https://www.sophos.com/en-us/support/knowledgebase/118988.aspx
+
+以上

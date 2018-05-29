@@ -1,0 +1,15 @@
+=====================
+Windows Server/Client
+=====================
+
+Common:
+
+.. toctree::
+   :maxdepth: 1
+
+   ./win2k12_nfs_mount.md
+
+..
+   ./tips.rst
+   ./socat.rst
+   ./rsyslog.rst

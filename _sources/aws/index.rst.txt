@@ -1,0 +1,12 @@
+======
+AWS
+======
+
+Common:
+
+.. toctree::
+   :maxdepth: 1
+
+   ./s3_logarchive.md
+   ./lsyncd.md
+

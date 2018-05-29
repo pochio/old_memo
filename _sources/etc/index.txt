@@ -1,0 +1,15 @@
+===================
+その他、なんか色々
+===================
+
+Common:
+
+.. toctree::
+   :maxdepth: 1
+
+   ./sakura_vps.rst
+
+..
+   ./aws_ec2.rst
+   ./aws_route53.rst
+

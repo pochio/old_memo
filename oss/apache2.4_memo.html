@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Apache 2.4 備忘録 &#8212; Memo  ドキュメント</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="Percona XtraDB Cluster のインストール手順" href="percona_install.html" />
+    <link rel="prev" title="公式レポジトリを利用したMySQLのインストール" href="mysql.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">OSS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix3.html">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3-on-cloud.html">Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../linux/index.html">RHEL/CentOS/Fedora</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../aws/index.html">AWS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../aws/s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aws/lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Apache 2.4 備忘録</a><ul>
+<li><a class="reference internal" href="#apache-2-4-mod-ssl">Apache 2.4 + mod_ssl のソースからのインストールとオレオレ証明書</a><ul>
+<li><a class="reference internal" href="#url">参考URL</a></li>
+<li><a class="reference internal" href="#">環境</a></li>
+<li><a class="reference internal" href="#apache-2-4">Apache 2.4 のインストール</a><ul>
+<li><a class="reference internal" href="#">事前準備</a></li>
+<li><a class="reference internal" href="#">ソースダウンロード</a></li>
+<li><a class="reference internal" href="#configure">configure の実行</a></li>
+<li><a class="reference internal" href="#">コンパイルとインストール</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apache-2-4">Apache 2.4 の初期設定</a><ul>
+<li><a class="reference internal" href="#">環境設定と起動スクリプトの準備</a><ul>
+<li><a class="reference internal" href="#">シンボリックリンクの作成</a></li>
+<li><a class="reference internal" href="#systemd">systemdの設定ファイル作成と起動確認</a></li>
+<li><a class="reference internal" href="#systemd">systemdのリロード</a></li>
+<li><a class="reference internal" href="#apache">Apacheの起動と動作確認</a></li>
+<li><a class="reference internal" href="#">環境変数の設定と読み込み</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ssl">SSL証明書(オレオレ証明書)の作成</a><ul>
+<li><a class="reference internal" href="#">秘密鍵の作成</a></li>
+<li><a class="reference internal" href="#csr">公開鍵(CSR)の作成</a></li>
+<li><a class="reference internal" href="#crt">サーバ証明書(CRT)の作成</a></li>
+<li><a class="reference internal" href="#">サーバ証明書の設置</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apachessl">ApacheのSSL設定と動作確認</a></li>
+<li><a class="reference internal" href="#systemdssl">systemdのSSLパスフレーズ対応</a><ul>
+<li><a class="reference internal" href="#">起動時に都度パスフレーズを要求する場合</a></li>
+<li><a class="reference internal" href="#">起動時のパスワード認証をスルーさせる場合</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="mysql.html" title="Previous Chapter: 公式レポジトリを利用したMySQLのインストール"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 公式レポジトリを利用したM...</span>
+    </a>
+  </li>
+  <li>
+    <a href="percona_install.html" title="Next Chapter: Percona XtraDB Cluster のインストール手順"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Percona XtraD... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="apache-2-4">
+<span id="apache-2-4"></span><h1>Apache 2.4 備忘録<a class="headerlink" href="#apache-2-4" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<hr class="docutils" />
+<div class="section" id="apache-2-4-mod-ssl">
+<span id="apache-2-4-mod-ssl"></span><h2>Apache 2.4 + mod_ssl のソースからのインストールとオレオレ証明書<a class="headerlink" href="#apache-2-4-mod-ssl" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>正直もうYUM(RPM)で対応すればええやん・・・と内心思いつつ確認だけした。</p>
+<div class="section" id="url">
+<span id="url"></span><h3>参考URL<a class="headerlink" href="#url" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="https://httpd.apache.org/">Apache</a></li>
+<li><a class="reference external" href="https://apr.apache.org/">Apache Portal Runtime(APR)</a></li>
+<li><a class="reference external" href="http://qiita.com/bageljp&#64;github/items/6b9876b7571852284ead">apache 2.4におけるSSL証明書の設定</a></li>
+<li><a class="reference external" href="https://jp.globalsign.com/support/faq/93.html">Apacheでの、パスフレーズ入力なしでの起動方法</a></li>
+</ul>
+</div>
+<div class="section" id="">
+<span id="id1"></span><h3>環境<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<ul class="simple">
+<li>Amazon EC2</li>
+<li>Red Hat Enterprise Linux Server release 7.2 (2016/03/03時点)</li>
+<li>SELinuxはPermissiveにしといた</li>
+</ul>
+</div>
+<div class="section" id="apache-2-4">
+<span id="id2"></span><h3>Apache 2.4 のインストール<a class="headerlink" href="#apache-2-4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id3"></span><h4>事前準備<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>openssl-devel と、Development Tools (development) をインストールする。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install openssl-devel @development
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id4"></span><h4>ソースダウンロード<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>当然のごとく公式からダウンロードして展開する。Apache、APR,APR Util の３つ。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> mkdir -p /usr/local/src/apache <span class="p">;</span> <span class="nb">cd</span> <span class="nv">$_</span>
+<span class="gp">#</span> curl -L -O http://ftp.yz.yamagata-u.ac.jp/pub/network/apache//httpd/httpd-2.4.18.tar.gz
+<span class="gp">#</span> tar zxvf httpd-2.4.18.tar.gz
+<span class="gp">#</span> <span class="nb">cd</span> httpd-2.4.18/srclib
+<span class="gp">#</span> curl -L -O http://ftp.yz.yamagata-u.ac.jp/pub/network/apache//apr/apr-1.5.2.tar.gz
+<span class="gp">#</span> curl -L -O http://ftp.yz.yamagata-u.ac.jp/pub/network/apache//apr/apr-util-1.5.4.tar.gz
+<span class="gp">#</span> tar zxvf apr-1.5.2.tar.gz
+<span class="gp">#</span> tar zxvf apr-util-1.5.4.tar.gz
+<span class="gp">#</span> ln -s apr-1.5.2 apr
+<span class="gp">#</span> ln -s apr-util-1.5.4 apr-util
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure">
+<span id="configure"></span><h4>configure の実行<a class="headerlink" href="#configure" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>お好みで configure オプションを付けて実行</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> /usr/local/src/apache/httpd-2.4.18
+<span class="gp">#</span> ./configure <span class="se">\</span>
+--prefix<span class="o">=</span>/usr/local/apache2.4.18 <span class="se">\</span>
+--enable-ssl <span class="p">;</span> <span class="nb">echo</span> <span class="nv">$?</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id5"></span><h4>コンパイルとインストール<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> make <span class="o">&amp;&amp;</span> make install <span class="p">;</span> <span class="nb">echo</span> <span class="nv">$?</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="apache-2-4">
+<span id="id6"></span><h3>Apache 2.4 の初期設定<a class="headerlink" href="#apache-2-4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id7"></span><h4>環境設定と起動スクリプトの準備<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="">
+<span id="id8"></span><h5>シンボリックリンクの作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h5>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> /usr/local/
+<span class="gp">#</span> ln -s apache2.4.18 apache
+</pre></div>
+</div>
+</div>
+<div class="section" id="systemd">
+<span id="systemd"></span><h5>systemdの設定ファイル作成と起動確認<a class="headerlink" href="#systemd" title="このヘッドラインへのパーマリンク">¶</a></h5>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi /etc/systemd/system/apache.service
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[Unit]
+Description=The Apache HTTP Server
+
+[Service]
+Type=forking
+EnvironmentFile=/usr/local/apache/bin/envvars
+PIDFile=/usr/local/apache/logs/httpd.pid
+ExecStart=/usr/local/apache/bin/apachectl start
+ExecReload=/usr/local/apache/bin/apachectl graceful
+ExecStop=/usr/local/apache/bin/apachectl stop
+KillSignal=SIGCONT
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+</pre></div>
+</div>
+</div>
+<div class="section" id="systemd">
+<span id="id9"></span><h5>systemdのリロード<a class="headerlink" href="#systemd" title="このヘッドラインへのパーマリンク">¶</a></h5>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl daemon-reload
+</pre></div>
+</div>
+</div>
+<div class="section" id="apache">
+<span id="apache"></span><h5>Apacheの起動と動作確認<a class="headerlink" href="#apache" title="このヘッドラインへのパーマリンク">¶</a></h5>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl start httpd
+<span class="gp">#</span> curl localhost
+<span class="go">  =&gt;It works!を確認</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id10"></span><h5>環境変数の設定と読み込み<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h5>
+<p>めんどうなのでパスを通しとく</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">echo</span> <span class="s2">&quot;export PATH=</span><span class="si">${</span><span class="nv">PATH</span><span class="si">}</span><span class="s2">:/usr/local/apache/bin&quot;</span> &gt;&gt; ~/.bashrc
+<span class="gp">#</span> <span class="nb">source</span> ~/.bashrc
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="ssl">
+<span id="ssl"></span><h3>SSL証明書(オレオレ証明書)の作成<a class="headerlink" href="#ssl" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id11"></span><h4>秘密鍵の作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> ~
+<span class="gp">#</span> mkdir sslkey
+<span class="gp">#</span> openssl genrsa -aes128 <span class="m">2048</span> &gt; sslkey/server.key
+<span class="go">  =&gt;パスフレーズは適当に入れて覚えとく</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="csr">
+<span id="csr"></span><h4>公開鍵(CSR)の作成<a class="headerlink" href="#csr" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> openssl req -new -key sslkey/server.key &gt; sslkey/server.csr
+<span class="go">  =&gt;適当に入れる</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="crt">
+<span id="crt"></span><h4>サーバ証明書(CRT)の作成<a class="headerlink" href="#crt" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> openssl x509 -in sslkey/server.csr -days <span class="m">3650</span> -req -signkey sslkey/server.key  &gt; sslkey/server.crt
+<span class="go">  =&gt;適当(ry</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id12"></span><h4>サーバ証明書の設置<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> cp sslkey/server.key sslkey/server.crt /usr/local/apache/conf
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="apachessl">
+<span id="apachessl"></span><h3>ApacheのSSL設定と動作確認<a class="headerlink" href="#apachessl" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>httpd.confを編集し、SSLに関する設定ファイルを読み込むように設定する。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> /usr/local/apache/conf
+<span class="gp">#</span> vi httpd.conf
+</pre></div>
+</div>
+<p>後述する&quot;ssl.conf&quot;を読み込むように設定</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>LoadModule socache_shmcb_module modules/mod_socache_shmcb.so
+LoadModule ssl_module modules/mod_ssl.so
+...
+# Secure (SSL/TLS) connections
+#Include conf/extra/httpd-ssl.conf
+Include conf/ssl.conf
+</pre></div>
+</div>
+<p>テンプレの&quot;httpd-ssl.conf&quot;を元に&quot;ssl.conf&quot;を作成・編集</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> egrep -v -e <span class="s1">&#39;^$&#39;</span> -e <span class="s1">&#39;^#&#39;</span> ./extra/httpd-ssl.conf &gt; ssl.conf
+<span class="gp">#</span> vi ssl.conf
+</pre></div>
+</div>
+<p>整形とパスを修正(2.4.18を削除)</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Listen 443
+SSLCipherSuite HIGH:MEDIUM:!MD5:!RC4
+SSLProxyCipherSuite HIGH:MEDIUM:!MD5:!RC4
+SSLHonorCipherOrder on
+SSLProtocol all -SSLv3
+SSLProxyProtocol all -SSLv3
+SSLPassPhraseDialog  builtin
+SSLSessionCache        &quot;shmcb:/usr/local/apache/logs/ssl_scache(512000)&quot;
+SSLSessionCacheTimeout  300
+
+&lt;VirtualHost _default_:443&gt;
+#    DocumentRoot &quot;/usr/local/apache/htdocs&quot;
+#    ServerName www.example.com:443
+#    ServerAdmin you@example.com
+    ErrorLog &quot;/usr/local/apache/logs/error_log&quot;
+    TransferLog &quot;/usr/local/apache/logs/access_log&quot;
+    SSLEngine on
+    SSLCertificateFile &quot;/usr/local/apache/conf/server.crt&quot;
+    SSLCertificateKeyFile &quot;/usr/local/apache/conf/server.key&quot;
+    &lt;FilesMatch &quot;\.(cgi|shtml|phtml|php)$&quot;&gt;
+        SSLOptions +StdEnvVars
+    &lt;/FilesMatch&gt;
+    &lt;Directory &quot;/usr/local/apache/cgi-bin&quot;&gt;
+        SSLOptions +StdEnvVars
+    &lt;/Directory&gt;
+    BrowserMatch &quot;MSIE [2-5]&quot; \
+             nokeepalive ssl-unclean-shutdown \
+             downgrade-1.0 force-response-1.0
+    CustomLog &quot;/usr/local/apache/logs/ssl_request_log&quot; \
+              &quot;%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \&quot;%r\&quot; %b&quot;
+&lt;/VirtualHost&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="systemdssl">
+<span id="systemdssl"></span><h3>systemdのSSLパスフレーズ対応<a class="headerlink" href="#systemdssl" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id13"></span><h4>起動時に都度パスフレーズを要求する場合<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>適当なスクリプトを作成</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi /usr/local/apache/bin/ssl-ask-passwd
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#!/bin/sh
+exec /bin/systemd-ask-password &quot;Enter SSL pass phrase for $1 ($2) : &quot;
+</pre></div>
+</div>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> chmod +x /usr/local/apache/bin/ssl-ask-passwd
+</pre></div>
+</div>
+<p>先に作成した&quot;ssl.conf&quot;に組み込む</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi ssl.conf
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#SSLPassPhraseDialog  builtin
+SSLPassPhraseDialog | /usr/local/apache/bin/ssl-ask-passwd
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id14"></span><h4>起動時のパスワード認証をスルーさせる場合<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>上記と同様に適当なスクリプトを作成して対処する</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> mkdir /root/.secret/
+<span class="gp">#</span> vi ~/.secret/ssl-ask-passwd
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#!/bin/sh
+echo &quot;&lt;password&gt;&quot;
+</pre></div>
+</div>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> chmod +x ~/.secret/ssl-ask-passwd
+</pre></div>
+</div>
+<p>先に作成した&quot;ssl.conf&quot;に組み込む</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi ssl.conf
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#SSLPassPhraseDialog  builtin
+SSLPassPhraseDialog exec:/root/.secret/ssl-ask-passwd
+</pre></div>
+</div>
+<p>以上</p>
+</div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, pochio.<br/>
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5 で生成しました。<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

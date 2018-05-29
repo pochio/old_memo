@@ -1,0 +1,119 @@
+
+# AWS/S3へのログバックアップ
+
+EC2からS3へログをバックアップしたいと言われたので調べてみた。ローテートのタイミングでアップデートすれば良いのかな？と思ったり。
+
+## S3,IAMの準備
+
+### S3で新規バケットを作成
+
+S3で新規にログ保管用のバケットを作成する。
+
+1. [サービス]-[S3]
+2. [バケットの作成]
+3. **バケット名** を入力し **リージョン** を選択して作成
+
+
+- 一度作成したバケットは名前を変更できないので後悔しないように注意
+- 必要に応じてログ記録など詳細設定も調整する。
+
+### IAMアカウントの準備
+
+EC2インスタンスからS3へログをアップロードするためのグループ および アカウントを作成する。
+
+1. 対象サーバからS3にアクセスするための管理グループを作成(１アカウントのみで良ければ不要)
+2. アカウントを作成する。作成時にアクセスキーの生成も行う。
+3. <font color="red"><b>アクセスキー ID</b></font> と <font color="red"><b>シークレットアクセスキー</b></font> をメモするか、<font color="red"><b>認証情報のダウンロード</b></font>を行い保管しておく。
+
+### 新規ポリシーの作成
+
+上記で作成したグループ/アカウントにアタッチする、S3操作のみの最小限の権限ポリシーを新規作成する。
+
+1. [ポリシー]-[ポリシーの作成] を選択
+2. [Policy Generator] を選択
+3. 下記のようにステートメントを設定し [ステートメントの追加] を選択
+  - 効果: **許可**
+  - AWS サービス: **Amazon S3**
+  - アクション: **すべてのアクション**
+  - Amazon リソースネーム（ARN）: **arn:aws:s3:::[バケット名], arn:aws:s3:::[バケット名]/**<br><br>
+  必要に応じて "条件の追加" でIP制限などを追加<br>
+  **条件の追加（オプション）**
+  - 条件: IpAddress
+  - キー: aws:SoruceIp
+  - 値: [IPADDRESS], [IPADDRESS], [IPADDRESS], ...
+4. [次のステップへ] を選択
+5. **ポリシー名** と、必要に応じて **説明** を入力し、ポリシーの作成を選択
+
+### ポリシーのアタッチとアクセス確認
+
+先に作成していた グループ または アカウント に作成したポリシーをアタッチする。
+
+必要に応じて [Cyberduck](https://cyberduck.io/) を利用しアクセス確認を行う。
+
+1. [公式サイト](https://cyberduck.io/)からダウンロード
+2. 起動し、新規接続を選択
+3. 接続先として **S3**を選択, **アクセスキー ID**, **シークレットアクセスキー**, パスにアクセスを許可した **S3バケット名** を入力し接続 (例: /example-bucket/ )
+4. 読み書き削除などが行える事を確認
+
+## EC2インスタンス/awscliの設定
+
+ログアーカイブを行うEC2インスタンス上で、awscli を使えるようにする。
+
+### awscli の設定
+
+EC2インスタンス上でログ操作を行うユーザアカウントで awscli を設定する。
+
+```shell-session
+$ vi ~/.bashrc
+  ## awscli completer
+  complete -C '/usr/bin/aws_completer' aws
+$ source .bashrc
+$ aws configure
+  AWS Access Key ID [None]: [アクセスキー ID]
+  AWS Secret Access Key [None]: [シークレットキー]
+  Default region name [None]: ap-northeast-1
+  Default output format [None]: json
+```
+
+### awscli の動作確認
+
+awscli を利用して、S3の操作が出来る事を確認
+
+```shell-session
+$ touch test
+$ aws s3 cp test s3://[バケット名]/test
+$ aws s3 rm s3://[バケット名]/test
+```
+
+ポイントとして
+- ディレクトリではなく、オブジェクト単位の管理
+- ディレクトリ内のファイルがなくなれば、ディレクトリ(オブジェクトもなくなる)
+
+awscli のオプション/ヘルプについては[TAB補完]か末尾に"help"を付ける事で参照出来る。
+
+```shell-session
+$ aws s3 [TAB]
+cp        ls        mb        mv        rb        rm        sync      website
+# aws s3 sync help
+```
+
+## ログのアーカイブのテスト
+
+/etc/logrotate.d/ 配下の設定で、postrotate に以下のような設定を加える。
+
+```bash
+...
+    postrotate
+        LOGNAME="messages-$(date +%Y%m%d)"
+        MAILBODY="$(hostname) - $(hostname -i)\nAWS logrotation error\n${LOGNAME} not archived."
+        SENDTO="ec2-user"
+        aws s3 cp /var/log/${LOGNAME} s3://[バケット名]/$(hostname)/$(date +%Y)/$(date +%m)/ ; if [ $? != 0 ]; then echo -e ${MAILBODY} | mail -s "AWS: $(hostname) S3 Log archive ERROR!!!" ${SENDTO} ; fi
+        ...
+    endscript
+```
+
+各種動作確認を行い、ログが送られる事を確認
+
+```shell-session
+$ sudo logrotate -f /etc/logrotate.configure
+```

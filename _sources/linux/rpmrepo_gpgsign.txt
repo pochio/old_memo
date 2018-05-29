@@ -1,0 +1,215 @@
+
+.. _rpmrepo_gpgsign:
+
+==================================================
+RPMパッケージと、ローカル・リポジトリへの署名方法
+==================================================
+
+ここではGPG鍵の作成、RPMへの署名、ローカル・リポジトリへの設定まで行う。
+
+.. contents::
+   :depth: 2
+
+"GPG" と "rpm-sign" のインストール
+-----------------------------------
+署名を行うために GPG と rpm-sign パッケージのインストールを行う。
+::
+
+  $ sudo yum install gpg rpm-sign -y
+
+GPG鍵の作成
+------------
+RPMビルドのために作成していたユーザ (以下では"mockbuild") にて、GPG鍵を作成する。
+::
+
+  $ sudo su - mockbuild
+  (mockbuild)$ gpg --gen-key
+
+実行例
+
+.. code-block:: bash
+
+  gpg (GnuPG) 1.4.19; Copyright (C) 2015 Free Software Foundation, Inc.
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
+  
+  gpg: ディレクトリー「/home/mockbuild/.gnupg」ができました
+  gpg: 新しい構成ファイル「/home/mockbuild/.gnupg/gpg.conf」ができました
+  gpg: 警告: 「/home/mockbuild/.gnupg/gpg.conf」のオプションは起動している間、有効になりません
+  gpg: 鍵輪「/home/mockbuild/.gnupg/secring.gpg」ができました
+  gpg: 鍵輪「/home/mockbuild/.gnupg/pubring.gpg」ができました
+  ご希望の鍵の種類を選択してください:
+     (1) RSA and RSA (default)
+     (2) DSA and Elgamal
+     (3) DSA (署名のみ)
+     (4) RSA (署名のみ)
+  選択は? <ENTER>
+  RSA keys may be between 1024 and 4096 bits long.
+  What keysize do you want? (2048) 
+  要求された鍵長は2048ビット
+  鍵の有効期限を指定してください。
+           0 = 鍵は無期限
+        <n>  = 鍵は n 日間で満了
+        <n>w = 鍵は n 週間で満了
+        <n>m = 鍵は n か月間で満了
+        <n>y = 鍵は n 年間で満了
+  鍵の有効期間は? (0) <ENTER>
+  Key does not expire at all
+  これで正しいですか? (y/N) y <ENTER>
+  
+  あなたの鍵を同定するためにユーザーIDが必要です。
+  このソフトは本名、コメント、電子メール・アドレスから
+  次の書式でユーザーIDを構成します:
+      "Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>"
+  
+  本名: Master Builder
+  電子メール・アドレス: masterbuilder@localhost.localdomain
+  コメント: LEGO
+  次のユーザーIDを選択しました:
+      “Master Builder (LEGO) <masterbuilder@localhost.localdomain>”
+  
+  名前(N)、コメント(C)、電子メール(E)の変更、またはOK(O)か終了(Q)? O
+  秘密鍵を保護するためにパスフレーズがいります。
+  
+  今から長い乱数を生成します。キーボードを打つとか、マウスを動かす
+  とか、ディスクにアクセスするとかの他のことをすると、乱数生成子で
+  乱雑さの大きないい乱数を生成しやすくなるので、お勧めいたします。
+  
+  ※"dd"コマンドで何か書き込むとか、RSS消化するとかして何とかする。
+  
+  bhgpg: /home/mockbuild/.gnupg/trustdb.gpg: 信用データベースができました
+  gpg: 鍵XXXXXXを絶対的に信用するよう記録しました
+  公開鍵と秘密鍵を作成し、署名しました。
+  
+  gpg: 信用データベースの検査
+  gpg: 最小の「ある程度の信用」3、最小の「全面的信用」1、PGP信用モデル
+  gpg: 深さ: 0  有効性:   1  署名:   0  信用: 0-, 0q, 0n, 0m, 0f, 1u
+  pub   XXXXX/XXXXXXXX YYYY-MM-DD
+                   指紋 = XXXX XXXX XXXX XXXX XXXX  XXXX XXXX XXXX XXXX XXXX
+  uid                  Build Master (Not LEGO) <buildmaster@localhost.localdomain>
+  sub   XXXXX/XXXXXXXX YYYY-MM-DD
+
+公開鍵のエクスポート
+---------------------
+公開鍵をエクスポートする。
+::
+
+    (mockbuild)$ gpg --exprot -a 'Master Builder' > RPM-GPG-KEY-mbkey
+
+RPMビルド環境への設定
+----------------------
+ビルドユーザの ".rpmmacros" にもGPGの設定を追記しておく。
+::
+
+    (mockbuild)$ echo "%_signature gpg" >> ~/.rpmmacros
+    (mockbuild)$ echo "%_gpg_name "Master Builder (LEGO) <masterbuilder@localhost.localdomain>" >> ~/.rpmmacros
+    (mockbuild)$ exit
+
+公開鍵のインポート
+-------------------
+RPMコマンドで利用出来るように、エクスポートした公開鍵を登録する。
+::
+
+  $ sudo rpm --import /home/mockbuild/RPM-GPG-KEY-mbkey
+
+公開鍵が"rpm"コマンドに登録された事を確認
+::
+
+  $ rpm -q gpg-pubkey --qf '%{name}-%{version}-%{release} --> %{summary}\n'
+
+RPMパッケージへの署名
+----------------------
+ビルド済みのRPMパッケージに署名を行う。
+::
+
+  $ sudo su - mockbuild
+  (mockbuild)$ rpm --addsign /var/www/html/localrepo/{i686,noarch}/*.rpm
+
+署名された事を確認
+::
+
+  (mockbuild)$ rpm -qpi /var/www/html/localrepo/{i686,noarch}/*.rpm | awk '/Signature/'
+
+リポジトリの情報を更新する。
+::
+
+  (mockbuild)$ exit
+  $ sudo createrepo --update /var/www/html/localrepo
+
+レポジトリへの設置
+------------------
+GPG公開鍵はRPM、リポジトリを利用する、他のサーバからも見える状態にする。他サーバから見れる場所(=ローカル・リポジトリを公開しているディレクトリなど)に公開鍵をコピーしておく
+::
+
+  $ sudo cp /home/mockbuild/RPM-GPG-KEY-mbkey /var/www/html/localrepo
+
+レポジトリ定義ファイルの更新
+----------------------------
+これでパッケージの署名と、公開鍵の準備は出来たので、ローカル・リポジトリを利用するための定義ファイルに、GPGの設定を追加する。
+::
+
+  $ sudo vi /etc/yum.repos.d/localrepo.repo
+  [localrepo]
+  name=Local Repository
+  failovermethod=priority
+  baseurl=http://localhost/localrepo
+  enabled=1
+  gpgcheck=1
+  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mbkey
+
+クライアント側の設定
+--------------------
+クライアント側で署名済みのレポジトリを利用するには、RPMコマンドに公開鍵を登録する必要がある。登録する方法は２通り
+
+#. rpmコマンドでインポートする。
+#. /etc/pki/rpm-gpg/ に保管し、必要な時にインポートする
+
+rpmコマンドでインポートする場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ローカル・リポジトリに設置した公開鍵を指定して、直接インポートする。
+::
+
+  $ sudo rpm --import http://<localrepoのIPアドレス>/localrepo/RPM-GPG-KEY-mbkey
+
+必要になった時にインポートする場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"yum"コマンドで必要になった際インポートするか問われるようにする。
+::
+
+  $ sudo curl -L -O http://<localrepoのIPアドレス>/localrepo/RPM-GPG-KEY-mbkey -P /etc/pki/rpm-gpg/
+
+以上の設定で RPM および ローカル・リポジトリ への署名が完了となる。
+
+小ネタ
+------
+
+RPM/GPG鍵の削除
+~~~~~~~~~~~~~~~~
+一旦"rpm"に認識させている鍵を削除したくなった場合、下記要領で削除出来る。
+
+- 削除対象の鍵を確認
+  ::
+  
+  $ sudo rpm -q gpg-pubkey --qf '%{name}-%{version}-%{release} --> %{summary}\n'
+  
+- 鍵の削除
+  ::
+  
+  $ sudo rpm -e gpg-pubkey-XXXXXXXX-XXXXXXXX
+
+ローカル・リポジトリのディレクトリ構成について
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+"repo"ファイルで利用可能な変数を用いて、複数のディストリビューション、バージョン、アーキテクチャに対応させるようにした方が良い。
+
+[ディストリビュージョン(RHEL/CentOS/Fedora)] -> リリースバージョン($releasever) -> アーキテクチャ($basearch) -> RPMパッケージ
+
+変数の値は下記のように確認出来る。詳細はRHELのドキュメントを参照(http://goo.gl/fhqiYR)
+::
+
+  $ python -c 'import yum, pprint; yb = yum.YumBase(); pprint.pprint(yb.conf.yumvar, width=1)'
+  {'arch': 'i686',
+   'basearch': 'i386',
+   'releasever': '21',
+   'uuid': <yum.misc._Dynamic_UUID object at 0xb5a9942c>}
+

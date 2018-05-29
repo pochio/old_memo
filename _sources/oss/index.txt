@@ -1,0 +1,50 @@
+======
+OSS
+======
+
+Common:
+
+.. toctree::
+   :maxdepth: 1
+
+   ./sphinx.rst
+   ./atom.md
+   ./gns3.rst
+   ./capturestream.rst
+   ./zabbix.rst
+   ./zabbix3.md
+   ./tsung.md
+   ./ksar7.md
+   ./cacti.md
+   ./manual_p2v.md
+   ./mysql.md
+   ./apache2.4_memo.md
+   ./percona_install.md
+   ./gns3-on-cloud.md
+
+..
+   ./zabbix.rst
+   ./serf.rst
+   ./consul.rst
+   ./growthforecast.rst
+   ./forcuslight.rst
+   ./yohoushi.rst
+   ./fluentd.rst
+   ./vagrant.rst
+   ./chef.rst
+   ./puppet.rst
+   ./ansible.rst
+   ./serverspec.rst
+   ./touryo.rst
+   ./nagios.rst
+   ./zabbix.rst
+   ./sense.rst
+   ./ganglia.rst
+   ./munin.rst
+   ./nginx.rst
+   ./haproxy.rst
+   ./mydns.rst
+   ./bind.rst
+   ./openstack.rst
+   ./manageiq.rst
+   ./blender.rst

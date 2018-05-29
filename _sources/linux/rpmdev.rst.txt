@@ -1,0 +1,85 @@
+
+==============
+RPMの作成手順
+==============
+
+.. contents::
+   :depth: 2
+
+RPMビルド環境の構築
+====================
+
+RPMビルド環境を簡単に作成するためのツール "rpmdevtools" をインストールする。 ::
+
+  $ sudo yum install rpmdevtools -y
+
+あとビルドするのに必要な開発ツール郡などをインストールする。 ::
+
+  $ sudo yum groupinstall "Development Tools" -y
+
+RPMのビルドは一般ユーザの権限で行うことが推奨されているので、ここでは "mockbuild" ユーザを作成した上で、RPMビルド環境を作成する。 ::
+
+  $ sudo useradd mockbuild && sudo passwd mockbuild
+  $ sudo su - mockbuild
+  (mockbuild)$ rpmdev-setuptree
+
+これだけでRPMをビルドする環境が整うが、１つだけ設定を追記する。この設定により "SOURCES" 配下にパッケージ毎にディレクトリが作成され管理しやすい。 ::
+
+  (mockbuild)$ vi ~/.rpmmacros
+  ...
+  %_sourcedir %{_topdir}/SOURCES/%{name}-%{version}-%{release}.src
+
+SRPM からRPMを作成する場合の例
+================================
+
+1. yumdownloader でSRPMを入手し、展開、specファイルを"~/rpmbuild/SPECS"へ配置する。
+   ::
+   
+     (mockbuild)$ cd ~/rpmbuild/SOURCES
+     (mockbuild)$ yumdownloader --source httpd
+     (mockbuild)$ rpmdev-extract httpd-2.4.10-15.fc21.src.rpm
+     (mockbuild)$ cp httpd-2.4.10-15.fc21.src/httpd.spec ../SPECS/
+
+2. 必要に応じて specファイル の内容を修正する。
+   ::
+   
+     (mockbuild)$ cd ../SPECS/
+     (mockbuild)$ vi httpd.spec
+
+3. RPMをビルドする。もしも依存関係などで警告が出た場合、その内容に従い依存関係にあるパッケージをインストールする。
+   ::
+   
+     (mockbuild)$ rpmbuild -ba httpd.spec
+   
+4. RPMが作成された事を確認
+   ::
+   
+     (mockbuild)$ ls -la ../rpmbuild/build
+
+ソース からRPMパッケージを作成する場合の例
+===========================================
+
+Sylpheed_ を例にする。この場合SPECファイルがソース(tar.gz)内に入っているので、依存パッケージさえ解消すれば容易にRPMパッケージが作成出来る (無い場合は SOURCES にソースを置いて、SPECS SPECファイルを作成してごにょごにょ頑張る )
+
+1. 依存パッケージのインストール
+   ::
+   
+     $ sudo yum install glib2-devel gtk2-devel -y
+   
+2. ソースの入手とビルド
+   ::
+   
+     $ sudo su - mockbuild
+     (mockbuild)$ wget http://sylpheed.sraoss.jp/sylpheed/v3.4/sylpheed-3.4.2.tar.gz -P ~/rpmbuild/SOURCES/
+     (mockbuild)$ rpmbuild -ta ~/rpmbuild/SOURCES/sylpheed-3.4.2.tar.gz
+   
+3. パッケージのインストール
+   ::
+   
+     (mockbuild)$ exit
+     $ sudo yum install \
+     /home/mockbuild/rpmbuild/RPMS/i686/sylpheed-3.4.2-1.fc21.i686.rpm \
+     /home/mockbuild/rpmbuild/RPMS/i686/sylpheed-plugins-3.4.2-1.fc21.i686.rpm
+
+.. _Sylpheed: http://sylpheed.sraoss.jp/ja/
+

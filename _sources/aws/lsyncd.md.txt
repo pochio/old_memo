@@ -1,0 +1,234 @@
+
+# AmazonLinux + lsyncd+rsyncd の確認
+
+凄く今更感があるけど lsyncd+rsyncd メモ
+
+## 参考URL
+
+- [Manual to Lsyncd 2.1.x](https://github.com/axkibe/lsyncd/wiki/Manual-to-Lsyncd-2.1.x)
+
+## AWSの状況
+
+ - EC2インスタンスを２つ起動
+ - プライベートセグメント (10.0.1.0/24#AZ1, 10.0.3.11/24#AZ2)に1台ずつ
+ - WEB#1: 10.0.1.10/32
+ - WEB#2: 10.0.3.11/32
+
+## セキュリティグループの設定
+
+ - インバウンド: rsyncが用いる TCP/873 を開放
+ - アウトバウンド: 全開
+ - WEB#1,#2 両方に設定
+
+## WEB#2 (rsync受け側) の設定
+
+### インストール
+
+yum にて rsync をインストール
+
+```shell-session
+$ sudo yum install rsync
+```
+
+### 起動スクリプトの作成
+
+デフォルトで起動スクリプトが存在しないので拾うか適当に作る(下記は[RedHatのドキュメント](https://access.redhat.com/documentation/ja-JP/Red_Hat_Enterprise_Linux/6/html/Managing_Confined_Services/sect-Managing_Confined_Services-rsync-Configuration_Examples.html)を参考に作成)
+
+```shell-session
+$ sudo vi /etc/init.d/rsyncd
+```
+
+```text
+#!/bin/bash
+
+# chkconfig: 2345 98 1
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+[ -f /usr/bin/rsync ] || exit 0
+
+case "$1" in
+start)
+ action "Starting rsyncd: " /usr/bin/rsync --daemon
+ ;;
+stop)
+ action "Stopping rsyncd: " killall rsync
+ ;;
+*)
+ echo "Usage: rsyncd {start|stop}"
+ exit 1
+esac
+ exit 0
+```
+
+実行権限の付与と自動起動の有効化
+
+```shell-session
+$ sudo chmod +x /etc/init.d/rsyncd
+$ sudo chkconfig rsyncd on
+```
+
+### 同期設定
+
+#### 同期ディレクトリの作成
+
+同期データの受け口となるディレクトリを作成
+
+```shell-session
+$ mkdir /home/ec2-user/public_html -p
+```
+
+#### 設定ファイルの作成
+
+```shell-session
+$ sudo vi /etc/rsyncd.conf
+```
+
+```text
+uid = ec2-user                          #<-rsyncdを実行するユーザ
+gid = ec2-user                          #<-rsyncdを実行するグループ
+read only = no
+log file = /var/log/rsyncd.log
+pid file = /var/run/rsyncd.pid
+
+[public_html]
+path = /home/ec2-user/public_html       #<-lsyncd/同期先となるディレクトリ指定
+hosts allow = localhost 10.0.1.10/32    #<-アクセスを許可するホストを指定
+hosts deny = *
+read only = false
+```
+
+##### 設定内容補足
+
+- 同期データの書き込みは"ec2-user"にて行う
+- [public_html] という設定を作成
+- 同期先のパスは "/home/ec2-user/public_html" とする
+- この設定に同期可能なホストを "localhost" と、後で設定するWEB#1(lsyncd)に限定
+
+#### ログローテート設定
+
+```shell-session
+# vi /etc/logrotate.d/rsyncd
+```
+
+```text
+/var/log/rsyncd.log {
+       rotate 10
+       missingok
+       notifempty
+       sharedscripts
+}
+```
+
+#### サービスの起動と確認
+
+```shell-session
+$ sudo service rsyncd start
+$ ps -efww | grep rsync
+$ sudo tail /var/log/rsyncd.log
+```
+
+## WEB#1 (lsync送り側) の設定
+
+### インストール
+
+yum を用いてインストールを行う。
+
+```shell-session
+$ sudo yum --enablerepo=epel install lsyncd
+```
+
+### 同期設定
+
+#### 設定ファイルの作成
+
+- /etc/lsyncd.conf を新規作成する
+- lsyncd の設定サンプルは "/usr/share/doc/lsyncd-x.y.z/examples/" に存在する(ssh経由でrsyncを行う場合など必要に応じて参照)
+
+```shell-session
+$ sudo cp /etc/lsyncd.conf{,.orig}
+$ sudo vi /etc/lsyncd.conf
+```
+
+```text
+
+-- Lua で記述されているので変更時には注意
+-- delay  = settings/delayでデフォルトの同期遅延15秒を3秒に変更
+-- delete = true により削除も含めた完全同期にする
+-- init   = lsyncd 再起動時の同期を止めたい場合は false にする。
+
+settings {
+       logfile    = "/var/log/lsyncd/lsyncd.log",
+       statusFile = "/tmp/lsyncd.stat",
+       statusInterval = 1,
+       maxProcesses   = 2,
+       nodaemon       = false,
+       insist         = 1,
+       delay          = 3,
+}
+
+sync {
+       default.rsync,
+       source="/home/ec2-user/public_html",
+       target = '10.0.3.11::public_html/',
+       delete = true,
+       #init = false,
+       rsync={
+               archive = true,
+               owner = true,
+               compress = true,
+               _extra = {
+                       "-a",
+                       "--numeric-ids",
+                       "--timeout=600",
+                       "--contimeout=60",
+               },
+       },
+}
+```
+
+
+#### Kernelパラメータの調整
+
+lsyncdで監視/同期するファイル数を増やすためにKernelパラメータの値を増やす。
+
+```shell-session
+$ sudo vi /etc/sysctl.conf								
+```
+
+```text
+...
+## lsyncd inotify settings								
+fs.inotify.max_queued_events = 32768
+fs.inotify.max_user_watches = 2097152
+```
+
+確認
+
+```shell-session
+$ sudo sysctl -a | grep inotify								
+fs.inotify.max_user_instances = 128								
+fs.inotify.max_user_watches = 2097152								
+fs.inotify.max_queued_events = 32768								
+```
+
+#### 起動
+
+```shell-session
+$ sudo chkconfig lsyncd on
+$ sudo service lsyncd start
+$ sudo tail -f /var/log/lsyncd/lsyncd.log
+ =>パーミッションやrsync先への疎通不能などのエラーが出力されていない事を確認
+```
+
+## 動作確認とか
+
+- 設定後ファイルの作成・更新・時刻更新・削除などを行い同期される事を確認
+- 同期先でファイルを操作しても、同期元に反映されない事を確認
+- 同期先でファイルを削除しても、lsyncd の再起動/再同期で戻る事を確認
+
+
+以上

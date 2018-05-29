@@ -1,0 +1,268 @@
+
+# CentOS7.x + Jenkins を利用したRPMビルド環境の構築
+
+## 参考URL
+
+- [Jenkins公式](https://jenkins-ci.org/)
+- [Linux startup script / Linux service - systemd](https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+as+a+Unix+daemon#InstallingJenkinsasaUnixdaemon-Linuxservicesystemd)
+- [Jenkinsを用いた継続的RPMビルド](http://int128.hatenablog.com/entry/20130111/1357834690)
+- [Jenkinsでシェルスクリプトを他のユーザとして実行](http://qiita.com/tmtysk/items/37c8c58cd59f834b1939)
+
+##### ・・・。
+
+Jenkins初心者なので、間違えてたり、変な事してたらごめんよ(´・ω・\`)
+
+## 構築環境
+
+- KVM仮想ゲスト
+- CentOS7.x (2016/03/04更新済み)
+  - 最小限のインストール
+- Firewalldは無効に
+- SELinuxは"Permissive"に設定
+
+## Jenkins
+
+### 依存パッケージのインストール
+
+Javaが必要なのと、導入手順が"wget"で記載されていたので、まとめて入れる。
+
+```shell-session
+# yum install wget java-1.8.0-openjdk -y
+```
+
+### Jenkins 本体のインストール
+
+[公式サイトのダウンロードページ](http://pkg.jenkins-ci.org/redhat/)に、レポジトリを利用した導入手順が公開されているので、手順に従いインストールを行う。
+
+```shell-session
+# wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+# rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+# yum install jenkins -y
+```
+
+### Jnekins の初期設定
+
+#### リッスン・ポートの変更
+
+既定でポート "8080" を使用するので、必要に応じて設定を変更する。
+
+```shell-session
+# vi /etc/sysconfig/jenkins
+...
+JENKINS_PORT="8008"
+```
+
+### Jenkins の起動・自動起動設定
+
+既定ではinitスクリプトが置かれるので、[Wikiの情報](https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+as+a+Unix+daemon#InstallingJenkinsasaUnixdaemon-Linuxservicesystemd)を元に"systemd"の設定ファイルを作成する。
+
+```shell-session
+# chmod -x /etc/init.d/jenkins
+# vi /etc/systemd/system/jenkins.service
+```
+
+以下、"jenkins.service" に記述した内容
+
+```text
+[Unit]
+Description=Jenkins Daemon
+
+[Service]
+ExecStart=/usr/bin/java -jar /usr/lib/jenkins/jenkins.war
+User=jenkins
+
+[Install]
+WantedBy=multi-user.target
+```
+
+上記ファイルの設置後、systemdをリロードして、起動を確認した後、自動起動を有効にする。
+
+```shell-session
+# systemctl daemon-reload
+# systemctl start jenkins
+```
+
+任意の端末でブラウザを起動し http://[IPADDRESS]:8080/ へアクセス、Jenkinsおじさんが見れる事を確認した後、自動起動を有効にする。
+
+```shell-session
+# systemctl enable jenkins
+```
+
+## RPMビルド環境の構築
+
+[以前調べた事がある](https://www.pochio.net/docs/linux/rpmdev.html)のと同様の手順で、"mockbuild" ユーザを追加する手順で対応
+
+```shell-session
+# yum install rpmdevtools @development -y
+# useradd mockbuild && passwd mockbuild
+# su - mockbuild
+$ rpmdev-setuptree
+```
+
+## Jenkins によるビルドのテスト
+
+### RPMビルドを実行するスクリプトの設置
+
+[こちらの設定例](http://qiita.com/tmtysk/items/37c8c58cd59f834b1939)を参考に、テストで Apache 2.4.18 の設定を入れてみた。実行は上記で作成した "mockbuild" ユーザを想定
+
+```shell-session
+$ cd ~
+$ pwd
+/home/mockbuild
+$ mkdir jenkins_jobs
+$ vi ./jenkins_jobs/apache.sh
+```
+
+"apache.sh" の内容、"#!/bin/bash -xe" については [こちら](http://qiita.com/tmtysk/items/37c8c58cd59f834b1939)を参考にした。
+
+```text
+#!/bin/bash -xe
+
+topdir="${WORKSPACE}/rpmbuild"
+rpmdir="${topdir}/RPMS/$(uname -m)"
+echo -e "%_topdir ${topdir}\n%_sourcedir %{_topdir}/SOURCES/%{name}-%{version}-%{release}.src" > "${HOME}/.rpmmacros"
+cd ${topdir}/SOURCES
+
+case "${TARGET}" in
+    */httpd-2.4.18.tar.bz2)
+        tarball="${TARGET##*/}"
+        module="${tarball%.tar.*}"
+        curl -O "${TARGET}"
+        tar jxf "${tarball}"
+        sed -e 's,%{epoch}:,,g' -i "${module}/httpd.spec"
+        tar jcf "${tarball}" "${module}"
+        rpmbuild -tb "${tarball}"
+        ;;
+    *.src.rpm)
+        curl -O "${TARGET}" && rpmbuild --rebuild "${TARGET##*/}"
+        ;;
+    *.tar.bz2)
+        curl -O "${TARGET}" && rpmbuild -tb       "${TARGET##*/}"
+        ;;
+    *)
+        echo 'environment variable TARGET must be set.'
+        exit 1
+        ;;
+esac
+exit $RETVAL
+```
+
+作成した "apache.sh" に実行権限を付与し、"mocubuild"ユーザを抜ける。
+
+```shell-session
+$ chmod +x ./jenkins_jobs/apache.sh
+$ exit
+```
+
+### "jenkins"ユーザへの許可
+
+上記と同様に[こちら](http://qiita.com/tmtysk/items/37c8c58cd59f834b1939)を参考にし、"jenkins"ユーザがスクリプトを実行出来るようにする。
+
+```shell-session
+# visudo
+...
+#Defaults    requiretty
+Defaults:jenkins !requiretty
+...
+## 末尾に追記！
+jenkins ALL=mockbuild NOPASSWD:SETENV: /home/mockbuild/jenkins_jobs/apache.sh
+```
+
+### Jenkins へのジョブの登録
+
+1. 任意の端末にてブラウザを起動しJenkinsにアクセス (http://[IPADDRESS]:8080/)
+2. トップ画面が表示されたら "<b>新しいジョブ</b> を作成して下さい。" をクリック
+3. ジョブ名を入力し、"フリースタイル・プロジェクトのビルド" を選択し、下部の [ OK ] をクリック
+
+#### ジョブの詳細設定#1
+
+- 必要に応じて説明を入力
+- ビルドのパラメータ化にチェックを入れる
+  - 選択(Choice)
+  - 名前: TARGET
+  - Apache,APR,APR-Util のダウンロード・パスを入力  
+    http://ftp.jaist.ac.jp/pub/apache/apr/apr-1.5.2.tar.bz2  
+    http://ftp.jaist.ac.jp/pub/apache/apr/apr-util-1.5.4.tar.bz2  
+    http://ftp.jaist.ac.jp/pub/apache/httpd/httpd-2.4.18.tar.bz2
+- ビルド
+  - ビルド手順の追加 - シェルの実行 を選択
+  - 下記シェルスクリプトの設定を入力
+    ```shell-session
+    export WORKSPACE=/home/mockbuild
+    sudo -E -u mockbuild /home/mockbuild/jenkins_jobs/apache.sh
+    ```
+  - 保存
+
+#### ジョブの実行(失敗)
+
+ここで手動でジョブを実行してみる(パラメータ付きビルド実行)・・・で、見事に失敗(´・ω・\`)ジョブのコンソール出力を見たら、sudo で失敗したっぽい。　で、/var/log/secure を見たら・・・
+
+```text
+# tail /var/log/secure
+...
+sudo: pam_succeed_if(sudo:auth): requirement "uid >= 1000" not met by user "jenkins"
+# id -a jenkins
+uid=996(jenkins) gid=994(jenkins) groups=994(jenkins)
+```
+
+んごぉ！！　う、う〜ん。。。
+
+#### Jenkins ユーザのUID/GID変更
+
+少し調べてみて"SSH Plugin"使おうか・・・とも考えたけど、もう面倒になったので一旦Jenkinsを止めて、適当に空いてるUIDへ変更・・・
+
+```shell-session
+# systemctl stop jenkins
+# groupmod -g 1002 jenkins
+# usermod  -u 1002 jenkins
+```
+
+旧UID/GIDが利用しているファイル/ディレクトリを検索・・・
+
+```shell-session
+# find / -user 996 -print
+# find / -group 994 -print
+```
+
+大体 /var 下だったので修正した。
+
+```shell-session
+# find /var -user 996 -print  | xargs -t chown jenkins
+# find /var -group 994 -print | xargs -t chgrp jenkins
+```
+
+で、Jenkins再起動
+
+```shell-session
+# systemctl start jenkins
+```
+
+#### 手動でのスクリプト実行
+
+一回失敗してダメだったので、今度は手動でのスクリプト実行でテストしてからにする。
+
+##### Jenkinsユーザの設定
+
+"jenkins"ユーザでシェルを使えるようにする。
+
+```shell-session
+# chsh jenkins
+jenkins のシェルを変更します。
+新しいシェル [/bin/false]: /bin/bash
+シェルを変更しました。
+```
+
+Jenkinsでジョブを実行するときと同様に環境変数を設定し、スクリプトを実行する。
+
+```shell-session
+# su - jenkins
+$ export export WORKSPACE=/home/mockbuild
+$ export TARGET=http://ftp.jaist.ac.jp/pub/apache/apr/apr-1.5.2.tar.bz2
+$ sudo -E -u mockbuild /home/mockbuild/jenkins_jobs/apache.sh
+```
+
+繰り返し何度か試験を行い、問題がなければjenkins側での実行などの対応を進める。シェルスクリプトの内容ももっとなんとかしたいし、最新のバージョンを拾って勝手にRPM作るとこまで試したいし、まだまだ色々ある。。
+
+めんどくさかった。。
+
+以上

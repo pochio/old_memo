@@ -1,0 +1,278 @@
+
+# Apache 2.4 備忘録
+
+---
+
+## Apache 2.4 + mod_ssl のソースからのインストールとオレオレ証明書
+
+正直もうYUM(RPM)で対応すればええやん・・・と内心思いつつ確認だけした。
+
+### 参考URL
+
+- [Apache](https://httpd.apache.org/)
+- [Apache Portal Runtime(APR)](https://apr.apache.org/)
+- [apache 2.4におけるSSL証明書の設定](http://qiita.com/bageljp@github/items/6b9876b7571852284ead)
+- [Apacheでの、パスフレーズ入力なしでの起動方法](https://jp.globalsign.com/support/faq/93.html)
+
+### 環境
+
+- Amazon EC2
+- Red Hat Enterprise Linux Server release 7.2 (2016/03/03時点)
+- SELinuxはPermissiveにしといた
+
+### Apache 2.4 のインストール
+
+#### 事前準備
+
+openssl-devel と、Development Tools (development) をインストールする。
+
+```shell-session
+# yum install openssl-devel @development
+```
+
+#### ソースダウンロード
+
+当然のごとく公式からダウンロードして展開する。Apache、APR,APR Util の３つ。
+
+```shell-session
+# mkdir -p /usr/local/src/apache ; cd $_
+# curl -L -O http://ftp.yz.yamagata-u.ac.jp/pub/network/apache//httpd/httpd-2.4.18.tar.gz
+# tar zxvf httpd-2.4.18.tar.gz
+# cd httpd-2.4.18/srclib
+# curl -L -O http://ftp.yz.yamagata-u.ac.jp/pub/network/apache//apr/apr-1.5.2.tar.gz
+# curl -L -O http://ftp.yz.yamagata-u.ac.jp/pub/network/apache//apr/apr-util-1.5.4.tar.gz
+# tar zxvf apr-1.5.2.tar.gz
+# tar zxvf apr-util-1.5.4.tar.gz
+# ln -s apr-1.5.2 apr
+# ln -s apr-util-1.5.4 apr-util
+```
+
+#### configure の実行
+
+お好みで configure オプションを付けて実行
+
+```shell-session
+# cd /usr/local/src/apache/httpd-2.4.18
+# ./configure \
+--prefix=/usr/local/apache2.4.18 \
+--enable-ssl ; echo $?
+```
+
+#### コンパイルとインストール
+
+```shell-session
+# make && make install ; echo $?
+```
+
+### Apache 2.4 の初期設定
+
+#### 環境設定と起動スクリプトの準備
+
+##### シンボリックリンクの作成
+
+```shell-session
+# cd /usr/local/
+# ln -s apache2.4.18 apache
+```
+
+##### systemdの設定ファイル作成と起動確認
+
+```shell-session
+# vi /etc/systemd/system/apache.service
+```
+
+```text
+[Unit]
+Description=The Apache HTTP Server
+
+[Service]
+Type=forking
+EnvironmentFile=/usr/local/apache/bin/envvars
+PIDFile=/usr/local/apache/logs/httpd.pid
+ExecStart=/usr/local/apache/bin/apachectl start
+ExecReload=/usr/local/apache/bin/apachectl graceful
+ExecStop=/usr/local/apache/bin/apachectl stop
+KillSignal=SIGCONT
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+##### systemdのリロード
+
+```shell-session
+# systemctl daemon-reload
+```
+
+##### Apacheの起動と動作確認
+
+```shell-session
+# systemctl start httpd
+# curl localhost
+  =>It works!を確認
+```
+
+##### 環境変数の設定と読み込み
+
+めんどうなのでパスを通しとく
+
+```shell-session
+# echo "export PATH=${PATH}:/usr/local/apache/bin" >> ~/.bashrc
+# source ~/.bashrc
+```
+
+### SSL証明書(オレオレ証明書)の作成
+
+#### 秘密鍵の作成
+
+```shell-session
+# cd ~
+# mkdir sslkey
+# openssl genrsa -aes128 2048 > sslkey/server.key
+  =>パスフレーズは適当に入れて覚えとく
+```
+
+#### 公開鍵(CSR)の作成
+
+```shell-session
+# openssl req -new -key sslkey/server.key > sslkey/server.csr
+  =>適当に入れる
+```
+
+#### サーバ証明書(CRT)の作成
+
+```shell-session
+# openssl x509 -in sslkey/server.csr -days 3650 -req -signkey sslkey/server.key  > sslkey/server.crt
+  =>適当(ry
+```
+
+#### サーバ証明書の設置
+
+```shell-session
+# cp sslkey/server.key sslkey/server.crt /usr/local/apache/conf
+```
+
+### ApacheのSSL設定と動作確認
+
+httpd.confを編集し、SSLに関する設定ファイルを読み込むように設定する。
+
+```shell-session
+# cd /usr/local/apache/conf
+# vi httpd.conf
+```
+
+後述する"ssl.conf"を読み込むように設定
+
+```text
+LoadModule socache_shmcb_module modules/mod_socache_shmcb.so
+LoadModule ssl_module modules/mod_ssl.so
+...
+# Secure (SSL/TLS) connections
+#Include conf/extra/httpd-ssl.conf
+Include conf/ssl.conf
+```
+
+テンプレの"httpd-ssl.conf"を元に"ssl.conf"を作成・編集
+
+```shell-session
+# egrep -v -e '^$' -e '^#' ./extra/httpd-ssl.conf > ssl.conf
+# vi ssl.conf
+```
+
+整形とパスを修正(2.4.18を削除)
+
+```text
+Listen 443
+SSLCipherSuite HIGH:MEDIUM:!MD5:!RC4
+SSLProxyCipherSuite HIGH:MEDIUM:!MD5:!RC4
+SSLHonorCipherOrder on
+SSLProtocol all -SSLv3
+SSLProxyProtocol all -SSLv3
+SSLPassPhraseDialog  builtin
+SSLSessionCache        "shmcb:/usr/local/apache/logs/ssl_scache(512000)"
+SSLSessionCacheTimeout  300
+
+<VirtualHost _default_:443>
+#    DocumentRoot "/usr/local/apache/htdocs"
+#    ServerName www.example.com:443
+#    ServerAdmin you@example.com
+    ErrorLog "/usr/local/apache/logs/error_log"
+    TransferLog "/usr/local/apache/logs/access_log"
+    SSLEngine on
+    SSLCertificateFile "/usr/local/apache/conf/server.crt"
+    SSLCertificateKeyFile "/usr/local/apache/conf/server.key"
+    <FilesMatch "\.(cgi|shtml|phtml|php)$">
+        SSLOptions +StdEnvVars
+    </FilesMatch>
+    <Directory "/usr/local/apache/cgi-bin">
+        SSLOptions +StdEnvVars
+    </Directory>
+    BrowserMatch "MSIE [2-5]" \
+             nokeepalive ssl-unclean-shutdown \
+             downgrade-1.0 force-response-1.0
+    CustomLog "/usr/local/apache/logs/ssl_request_log" \
+              "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+</VirtualHost>
+```
+
+### systemdのSSLパスフレーズ対応
+
+#### 起動時に都度パスフレーズを要求する場合
+
+適当なスクリプトを作成
+
+```shell-session
+# vi /usr/local/apache/bin/ssl-ask-passwd
+```
+
+```text
+#!/bin/sh
+exec /bin/systemd-ask-password "Enter SSL pass phrase for $1 ($2) : "
+```
+
+```shell-session
+# chmod +x /usr/local/apache/bin/ssl-ask-passwd
+```
+
+先に作成した"ssl.conf"に組み込む
+
+```shell-session
+# vi ssl.conf
+```
+
+```text
+#SSLPassPhraseDialog  builtin
+SSLPassPhraseDialog | /usr/local/apache/bin/ssl-ask-passwd
+```
+
+#### 起動時のパスワード認証をスルーさせる場合
+
+上記と同様に適当なスクリプトを作成して対処する
+
+```shell-session
+# mkdir /root/.secret/
+# vi ~/.secret/ssl-ask-passwd
+```
+
+```text
+#!/bin/sh
+echo "<password>"
+```
+
+```shell-session
+# chmod +x ~/.secret/ssl-ask-passwd
+```
+
+先に作成した"ssl.conf"に組み込む
+
+```shell-session
+# vi ssl.conf
+```
+
+```text
+#SSLPassPhraseDialog  builtin
+SSLPassPhraseDialog exec:/root/.secret/ssl-ask-passwd
+```
+
+以上

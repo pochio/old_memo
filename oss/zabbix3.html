@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ZABBIX 3.0.1 のインストール &#8212; Memo  ドキュメント</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="Tsung によるウェブサイトの負荷試験" href="tsung.html" />
+    <link rel="prev" title="ZABBIX導入手順 (RHEL/CentOS6)" href="zabbix.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">OSS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3-on-cloud.html">Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../linux/index.html">RHEL/CentOS/Fedora</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../aws/index.html">AWS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../aws/s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aws/lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">ZABBIX 3.0.1 のインストール</a><ul>
+<li><a class="reference internal" href="#url">参考URL</a></li>
+<li><a class="reference internal" href="#">導入環境</a></li>
+<li><a class="reference internal" href="#">初期設定</a></li>
+<li><a class="reference internal" href="#zabbix-3-0-1">ZABBIX 3.0.1 のインストール</a><ul>
+<li><a class="reference internal" href="#">レポジトリの有効化</a></li>
+<li><a class="reference internal" href="#">まとめてインストール</a></li>
+<li><a class="reference internal" href="#">データベースの構築</a><ul>
+<li><a class="reference internal" href="#">データ・ディレクトリの変更</a></li>
+<li><a class="reference internal" href="#">サービスの起動</a></li>
+<li><a class="reference internal" href="#mariadb">MariaDBの初期設定</a></li>
+<li><a class="reference internal" href="#zabbix">ZABBIXデータベースの作成</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zabbix">ZABBIXサーバの初期設定</a></li>
+<li><a class="reference internal" href="#zabbix">ZABBIXサーバの起動</a></li>
+<li><a class="reference internal" href="#apache-php">Apache/PHPの設定</a></li>
+<li><a class="reference internal" href="#apache">Apacheの起動</a></li>
+<li><a class="reference internal" href="#">ウェブ・フロントエンドからの初期設定</a></li>
+<li><a class="reference internal" href="#zabbix">ZABBIXへのログイン</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="zabbix.html" title="Previous Chapter: ZABBIX導入手順 (RHEL/CentOS6)"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; ZABBIX導入手順 (R...</span>
+    </a>
+  </li>
+  <li>
+    <a href="tsung.html" title="Next Chapter: Tsung によるウェブサイトの負荷試験"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Tsung によるウェブサイトの負荷試験 &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="zabbix-3-0-1">
+<span id="zabbix-3-0-1"></span><h1>ZABBIX 3.0.1 のインストール<a class="headerlink" href="#zabbix-3-0-1" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>ものすごく今更感あるけど、一応やったのでメモ</p>
+<div class="section" id="url">
+<span id="url"></span><h2>参考URL<a class="headerlink" href="#url" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://www.zabbix.com/jp/">Zabbixオフィシャル日本語サイト</a></li>
+<li><a class="reference external" href="https://www.zabbix.com/documentation/3.0/">Zabbix Documentation 3.0</a></li>
+</ul>
+</div>
+<div class="section" id="">
+<span id="id1"></span><h2>導入環境<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>AWS/EC2 (t2.micro)</li>
+<li>CentOS7 (2016/03/08時点で更新)</li>
+<li>/dev/sda ... 30GB , /dev/sdb ... 30GB</li>
+<li>セキュリティポリシーでローカルセグメントの TCP/80,443,3306 (mysql) を開放</li>
+<li>SELinuxは無効化(disabled)、firewalldは最初から入ってない状態</li>
+<li>ZABBIX自体の動作要件は<a class="reference external" href="https://www.zabbix.com/documentation/3.0/manual/installation/requirements">こちらを参照</a></li>
+</ul>
+</div>
+<div class="section" id="">
+<span id="id2"></span><h2>初期設定<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p><b>/etc/hosts</b> に下記内容を追記、ここでは記述しないが後で冗長化するためVIPや２台目について記述</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>10.0.1.12     zabbix zabbix.localdomain #(VIP、後でHA構成にしたいので)
+10.0.1.13     zabbix1 zabbix1.localdomain
+10.0.1.14     zabbix2 zabbix2.localdomain
+</pre></div>
+</div>
+<p>EC2/CentOS7のインスタンスにスワップ領域がないのでローカルで追加(t2.microにはインスタンスストアが無いので)、あとCentOS7/XFSの環境なので dd でイメージ作成を行った。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/swap.img <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span><span class="m">2048</span>
+<span class="gp">#</span> chmod <span class="m">600</span> /swap.img
+<span class="gp">#</span> mkswap /swap.img
+<span class="gp">#</span> swapon /swap.img
+<span class="gp">#</span> <span class="nb">echo</span> <span class="s2">&quot;/swap.img none swap defaults 0 0&quot;</span> &gt;&gt; /etc/fstab
+</pre></div>
+</div>
+</div>
+<div class="section" id="zabbix-3-0-1">
+<span id="id3"></span><h2>ZABBIX 3.0.1 のインストール<a class="headerlink" href="#zabbix-3-0-1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p><a class="reference external" href="https://www.zabbix.com/documentation/3.0/">公式のドキュメント</a>の通り、EPELとZABBIXレポジトリを有効にしてインストールを行う。</p>
+<div class="section" id="">
+<span id="id4"></span><h3>レポジトリの有効化<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>EPELと、<a class="reference external" href="http://repo.zabbix.com/zabbix/3.0/rhel/7/x86_64/">ZABBIXレポジトリのRPM</a>をインストールする。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install epel-release -y
+<span class="gp">#</span> yum install http://repo.zabbix.com/zabbix/3.0/rhel/7/x86_64/zabbix-release-3.0-1.el7.noarch.rpm -y
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id5"></span><h3>まとめてインストール<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>MariaDB,ZABBIX Agentと、日本語WEBインターフェースもインストールする。MariaDBではなくMySQLにしたい場合は<a class="reference external" href="https://www.pochio.net/blog/2016/02/25/koushiki-repository-wo-riyoushita-mysql-no-install/">こちらを参考</a>にするなどしてMySQLを入れて下さい。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install zabbix-server-mysql zabbix-web-mysql zabbix-web-japanese zabbix-agent @mariadb
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id6"></span><h3>データベースの構築<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id7"></span><h4>データ・ディレクトリの変更<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>後でHA構成にするためにディレクトリを作成し、my.cnf の &quot;datadir=&quot; 設定を変える。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> mkdir -p /data/mysql <span class="p">;</span> chown mysql:mysql <span class="nv">$_</span>
+<span class="gp">#</span> vi /etc/my.cnf
+<span class="go">...</span>
+<span class="gp">#</span><span class="nv">datadir</span><span class="o">=</span>/var/lib/mysql
+<span class="go">datadir=/data/mysql</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id8"></span><h4>サービスの起動<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>MariaDBを起動、正常に起動してきたら自動起動も有効にしておく。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl start mariadb
+<span class="gp">#</span> systemctl status mariadb
+<span class="gp">#</span> systemctl <span class="nb">enable</span> mariadb
+</pre></div>
+</div>
+</div>
+<div class="section" id="mariadb">
+<span id="mariadb"></span><h4>MariaDBの初期設定<a class="headerlink" href="#mariadb" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>&quot;mysql_secure_installation&quot; を実行し、MariaDB/rootパスワードなどの設定を行う。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> mysql_secure_installation
+</pre></div>
+</div>
+</div>
+<div class="section" id="zabbix">
+<span id="zabbix"></span><h4>ZABBIXデータベースの作成<a class="headerlink" href="#zabbix" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>ZABBIXが利用するデータベースを作成する。&quot;password&quot; は任意のものを設定する。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> mysql -u root -p
+<span class="go">MariaDB&gt; create database zabbix character set utf8;</span>
+<span class="go">MariaDB&gt; grant all privileges on zabbix.* to zabbix@localhost identified by &#39;password&#39;;</span>
+<span class="go">MariaDB&gt; exit</span>
+</pre></div>
+</div>
+<p>ZABBIX 3.0 で用意されている初期設定用のスキーマを作成したデータベースに適用する。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> /usr/share/doc/zabbix-server-mysql-3.0.1
+<span class="gp">#</span> zcat create.sql.gz <span class="p">|</span> mysql -u root -p zabbix
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="zabbix">
+<span id="id9"></span><h3>ZABBIXサーバの初期設定<a class="headerlink" href="#zabbix" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>&quot;zabbix_server.conf&quot; にデータベースにアクセスするための情報を設定する。下記の&quot;DBPassword&quot;以外は既定値なので変更しなくても良い。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> ~
+<span class="gp">#</span> cp /etc/zabbix/zabbix_server.conf<span class="o">{</span>,.orig<span class="o">}</span>
+<span class="gp">#</span> vi /etc/zabbix/zabbix_server.conf
+<span class="go">DBHost=localhost</span>
+<span class="go">DBName=zabbix</span>
+<span class="go">DBUser=zabbix</span>
+<span class="go">DBPassword=password</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="zabbix">
+<span id="id10"></span><h3>ZABBIXサーバの起動<a class="headerlink" href="#zabbix" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>&quot;zabbix-server&quot; を起動、正常に起動してきたら自動起動も有効にしておく。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl start zabbix-server
+<span class="gp">#</span> systemctl status zabbix-server
+<span class="gp">#</span> cat /var/log/zabbix/zabbix_server.log
+<span class="gp">#</span> systemctl <span class="nb">enable</span> zabbix-server
+</pre></div>
+</div>
+</div>
+<div class="section" id="apache-php">
+<span id="apache-php"></span><h3>Apache/PHPの設定<a class="headerlink" href="#apache-php" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> cp /etc/httpd/conf.d/zabbix.conf<span class="o">{</span>,.orig<span class="o">}</span>
+<span class="gp">#</span> vi /etc/httpd/conf.d/zabbix.conf
+<span class="go">...</span>
+<span class="gp">#</span> php_value date.timezone Europe/Riga
+<span class="go">php_value date.timezone Asia/Tokyo</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="apache">
+<span id="apache"></span><h3>Apacheの起動<a class="headerlink" href="#apache" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>&quot;httpd(apache)&quot; を起動、正常に起動してきたら自動起動も有効にしておく。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl start httpd
+<span class="gp">#</span> systemctl status httpd
+<span class="gp">#</span> systemctl <span class="nb">enable</span> httpd
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id11"></span><h3>ウェブ・フロントエンドからの初期設定<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>任意の端末にてブラウザを起動し http://[IPADDRESS]/zabbix/  へアクセス、ZABBIXの初期設定を行う。以下、画面の指示に従うだけなので説明は省く。</p>
+<p><img alt="Welcome" src="oss/./zabbix/image01.png" /></p>
+<p><img alt="Check for pre-requisites" src="oss/./zabbix/image02.png" /></p>
+<p><img alt="Configure DB Connection" src="oss/./zabbix/image03.png" /></p>
+<p><img alt="Zabbix server datails" src="oss/./zabbix/image04.png" /></p>
+<p><img alt="Pre-Installation sumamry" src="oss/./zabbix/image05.png" /></p>
+<p><img alt="Install" src="oss/./zabbix/image06.png" /></p>
+</div>
+<div class="section" id="zabbix">
+<span id="id12"></span><h3>ZABBIXへのログイン<a class="headerlink" href="#zabbix" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>初期設定を終えると、ログイン画面が表示されるので初期ID: <b>Admin</b> / パスワード: <b>zabbix</b> でログインする。</p>
+<p><img alt="Login" src="oss/./zabbix/image07.png" /></p>
+<p><img alt="Frontend" src="oss/./zabbix/image08.png" /></p>
+<p>以上</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, pochio.<br/>
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5 で生成しました。<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

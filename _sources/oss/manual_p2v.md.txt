@@ -1,0 +1,120 @@
+
+# ssh+tarを用いたP2V
+
+古い環境をP2Vさせたいのに、VMware vCenter Converter はSottwareRAIDに対応していないとかで、自力で移行させる手順を調べてみた。ただし全ての環境でうまくいくのかは分からないし、当然データを送っている最中の変更は反映されないとか色々課題が・・・一応メモ
+
+## P2V先VMの新規作成
+
+1. VMwareなり、KVMで新規仮想ゲストを作成
+2. RHEL/CentOSのISOイメージを用いて sshd を有効にした状態のレスキューモードを起動する。
+   ```shell-session
+   ※ブートメニューで "Rescue〜" を選択、[TAB]キーを押し末尾にsshdを付ける
+   > ... rescue sshd
+   ```
+3. ネットワークを有効にする。
+4. ローカルディスクはマウントしない。(Skip)
+5. "shell" に降りる。
+6. P2V元に合わせるか、任意でパーティションを作成(ブートフラグを忘れずに)
+   ```shell-session
+   例)
+   # parted /dev/sda
+   (parted) mklabel             #<-ディスクラベルの作成
+   (parted) mkpart              #<-パーティションの作成(任意)
+   (parted) set 1 boot on       #<-ブートフラグのセット
+   (parted) quit                #<-終了
+   ```
+7. パーティションの初期化
+   ```shell-session
+   例)
+   # mkfs.ext4 /dev/sdX[NUM]
+   # mkswap /dev/sdX[NUM]
+   ...
+   ```
+8. マウント
+   ```shell-session
+   例)
+   # mkdir /mnt/sysimage/boot -p
+   # mount /dev/sdX[NUM] /mnt/sysimage
+   # mount /dev/sdX[NUM] /mnt/sysimage/boot
+   ...
+   ```
+
+## データ・マイグレーション
+
+1. P2V元から、先に作成したP2V先の仮想ゲストにSSHログイン出来る事を確認(ID: root / PW: なし)
+2. tar,ssh を用いて、P2V先で手動マウントしたとこにデータをコピーする。
+   ```shell-session
+   # cd /
+   # tar zcf - \
+     --exclude /boot \
+     --exclude /sys \
+     --exclude /dev \
+     --exclude /cgroup \
+     --exclude /srv \
+     --exclude /selinux \
+     --exclude /lost+found \
+     --exclude /net \
+     --exclude /proc \
+     / | ssh root@[P2V先VMのIP] "(cd /mnt/sysimage/root && tar zxf -)"
+   # tar zcf - /boot | ssh root@[P2V先VMのIP] "(cd /mnt/sysimage && tar zxf -)"
+   ...
+   ```
+3. コピー元とコピー先のディレクトリ構成などが相違ないことを確認
+4. P2V元をログアウト
+
+## P2V先VMの設定調整
+
+1. "/boot" の確認とコピーしなかったディレクトリの作成
+   ```shell-session
+   # ls -la /mnt/sysimage/boot
+   # cd /mnt/sysimage/root
+   # mkdir boot sys dev cgroup srv selinux net proc
+   # cd /
+   ```
+2. fstab, NIC/MACアドレス, IPアドレスなどを変更、必要に応じてSSHホスト鍵なども削除(初期化)する。
+   ```shell-session
+   # chroot /mnt/sysimage/root
+   ```
+3. grub のインストール
+   ```shell-session
+   # grub-install
+   # hexdump -C -n 512 /dev/sda   #<-確認
+   ```
+4. grub.conf の編集
+   ```shell-session
+   # vi /etc/grub.conf
+     =>kernel行のroot=UUID〜を、root=/dev/sda3 に修正("/"を指定する)
+   ```
+5. initrd の再作成
+   ブートするカーネルのバージョンを確認
+   ```shell-session
+   # cat /etc/grub.conf
+   ```
+   RHEL6系の場合
+   ```shell-session
+   # cp -p /boot/initramfs-[version].img{,.bak}
+   # /sbin/dracut -f /boot/initramfs-[version].img [version]
+   ```
+   RHEL5系の場合
+   ```shell-session
+   # cp -p /boot/initrd-[version].img{,.bak}
+   # mkinitrd -f -v /boot/initrd-[version].img [version]
+   ```
+
+## P2V先VMの停止と起動
+
+起動する事を祈る(´・ω・`)
+
+```shell-session
+# exit
+# cd /
+# umount /mnt/sysimage/boot
+# umount /mnt/sysimage/root
+# sync;sync;sync;reboot
+```
+
+## TODO
+
+ssh+tar実行時に時刻を取得->1回目の実行後 find で検索をかけデータ移行時の差分を再度コピーみたいなスクリプトを実行する方が、ほんのり安心感増すかな？
+
+以上

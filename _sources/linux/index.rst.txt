@@ -1,0 +1,20 @@
+==================
+RHEL/CentOS/Fedora
+==================
+
+Common:
+
+.. toctree::
+   :maxdepth: 1
+
+   ./rpmdev.rst
+   ./createrepo.rst
+   ./rpmrepo_gpgsign.rst
+   ./yum-autoupdate.md
+   ./sophos.md
+   ./jenkins.md
+
+..
+   ./tips.rst
+   ./socat.rst
+   ./rsyslog.rst

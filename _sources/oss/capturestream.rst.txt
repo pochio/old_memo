@@ -1,0 +1,78 @@
+
+=============
+CaptureStream
+=============
+
+CaptureStream_ とは？
+=====================
+
+ストリーミングで公開されている、NHKラジオ語学講座のデータをダウンロードするためのツール
+
+.. _CaptureStream: http://sourceforge.jp/projects/capturestream/
+
+Fedora 21 での利用手順
+=======================
+
+Ruby版を利用する手順は以下の通り。
+
+#. 必要なパッケージ郡のインストール
+
+   ::
+   
+     $ sudo yum install ruby ffmpeg
+     
+#. CaptureStream Ruby版のダウンロード
+
+   CaptureStream_ から、Ruby版をダウンロードし、実行権限を付与する。
+   ::
+   
+     $ cd ~ ; mkdir NHK ; cd $_
+     $ wget --trust-server-names 'http://sourceforge.jp/frs/redir.php?m=jaist&f=%2Fcapturestream%2F60934%2FCaptureStream.rb'
+     $ chmod +x CaptureStream.rb
+     
+#. CatureStream の使い方
+
+   詳しい使い方や設定については "CaptureStream.rb" の中にコメントで書かれている。必要に応じて中の設定値などを変える。とりあえず全講座をダウンロードしたい場合は "all" を付けて実行すれば良い。
+   ::
+   
+     $ ./CaptureStream.rb all
+     語学講座ダウンローダ (2014/04/07)
+     basic1: OOOOO
+     basic2: OOOOO
+     basic3: OOOOO
+     timetrial: OOOOO
+     kaiwa: OOOOO
+     business1: OO
+     business2: OOO
+     kouryaku: OO
+     yomu: O
+     enjoy: OOOOO
+     chinese: OOOOO
+     levelup_chinese: OOOOO
+     french: OOOOO
+     italian: OOOOO
+     hangeul: OOOOO
+     levelup_hangeul: OOOOO
+     german: OOOOO
+     spanish: OOOOO
+     russian: OOOOO
+
+   ::
+   
+     $ ls -la
+     CaptureStream.rb                      レベルアップハングル講座
+     まいにちイタリア語                    レベルアップ中国語
+     まいにちスペイン語                    英会話タイムトライアル
+     まいにちドイツ語                      英語で読む村上春樹
+     まいにちハングル講座                  基礎英語1
+     まいにちフランス語                    基礎英語2
+     まいにちロシア語                      基礎英語3
+     まいにち中国語                        攻略！英語リスニング
+     エンジョイ・シンプル・イングリッシュ  実践ビジネス英語
+     ラジオ英会話                          入門ビジネス英語
+
+   .. note::
+   
+     番組改変時期には取得出来ないものが出てくると思われるので、その時は CaptureStream_ のフォーラムを見つつ更新を待つか、自分で中身をいぢってなんとかする。
+          
+     

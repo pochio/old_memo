@@ -1,0 +1,252 @@
+
+=============================
+ZABBIX導入手順 (RHEL/CentOS6)
+=============================
+
+.. contents::
+   :depth: 3
+
+メモ
+====
+
+- 仮想ゲストにZABBIXを導入する。バックエンドのDBには PostgreSQL を選択
+- OSはRHEL/CentOS 6.x (latest, yum update済) の環境を想定、RHELの場合は "optional" リポジトリを利用出来るようにしておく
+
+  ::
+
+    $ sudo subscription-manager repos --enable rhel-6-server-optional-rpms
+
+1. ZABBIXのリポジトリを設定
+============================
+
+公式サイト_ のダウンロードにて、最新の "zabbix-relese" を確認しインストールする
+
+::
+
+  $ sudo yum install http://repo.zabbix.com/zabbix/2.4/rhel/6/x86_64/zabbix-release-2.4-1.el6.noarch.rpm
+
+.. _公式サイト: http://www.zabbix.com/jp/
+
+2. Apache のインストールと起動設定
+==================================
+
+2-1. ZABBIXで利用する Apache をインストールする
+-----------------------------------------------
+::
+
+  $ sudo yum groupinstall "Web Server"
+
+2-2. 起動・自動起動設定
+------------------------
+::
+
+  $ sudo service httpd start
+  $ sudo chkconfig httpd on
+
+3. PostgreSQL のインストールと初期設定
+======================================
+
+3-1. PostgreSQL サーバのインストール
+------------------------------------
+::
+
+  $ sudo yum -y groupinstall "PostgreSQL Database server"
+
+3-2. データベース・ディレクトリの作成
+-------------------------------------
+::
+
+  $ mkdir -p /share/pgsql/data
+  $ chown -R postgres:postgres /share/pgsql
+
+3-3. データベースのイニシャライズ
+---------------------------------
+::
+
+  $ sudo su - postgres -c "initdb /share/pgsql/data"
+
+3-4. PostgreSQL サーバの起動設定
+---------------------------------
+::
+
+  $ sudo vi /etc/sysconfig/pgsql/postgresql
+  -----
+  PGPORT=5432
+  PGDATA=/share/pgsql/data
+  -----
+
+3-5. 起動・自動起動設定
+------------------------
+::
+
+  $ sudo service postgresql start
+  $ sudo chkconfig postgresql on
+
+4. ZABBIX のインストール
+=========================
+
+4-1. インストール
+------------------
+
+下記パッケージについては下表を参照
+
+::
+
+  $ sudo yum -y install zabbix zabbix-server zabbix-server-pgsql zabbix-web \
+  zabbix-web-pgsql zabbix-web-japanese zabbix-sender zabbix-get
+
+.. cssclass:: table-striped
+
+   ==================== =======================================
+   パッケージ            役割
+   ==================== =======================================
+   zabbix               ZABBIX本体
+   zabbix-server        ZABBIXサーバ
+   zabbix-server-pgsql  ZABBIXサーバ・PostgreSQL用
+   zabbix-web           WEBフロントエンド
+   zabbix-web-pgsql     WEBフロントエンド・PostgreSQL用
+   zabbix-web-japanese  WEBフロントエンド・日本語フォント
+   zabbix-sender        情報登録ツール
+   zabbix-get           エージェント向け情報取得ツール
+   zabbix-agent         ZABBIX監視用エージェント
+   ==================== =======================================
+
+5. ZABBIX用データベース の作成
+===============================
+
+5-1. ZABBIXユーザとデータベースの作成
+-------------------------------------
+::
+
+  $ sudo su - postgres
+  $ createuser -W zabbix
+  $ createdb -O zabbix zabbix
+
+5-2. ZABBIX・SQLのインポート
+-----------------------------
+::
+
+  $ cd /usr/share/doc/zabbix-server-pgsql-x.y.z/create
+  $ psql -W -d zabbix -f schema.sql zabbix
+  $ psql -W -d zabbix -f images.sql zabbix
+  $ psql -W -d zabbix -f data.sql zabbix
+
+5-3. アクセスとパフォーマンス設定
+---------------------------------
+
+必要に応じて "pg_hba.conf", "postgresql.conf" を編集する
+
+::
+
+  $ cd /share/pgsql/data
+  $ cp pg_hba.conf{,.orig}
+  $ cp postgresql.conf{,.orig}
+  <編集>
+  $ exit
+  $ sudo service postgresql restart
+
+6. ZABBIXサーバの設定と起動
+============================
+
+/etc/zabbix/zabbix_server.conf へZABBIXサーバの設定を行う。
+
+6-1. ZABBIXサーバ データベース接続先の設定
+------------------------------------------
+
+ZABBIXサーバに対し、利用するデータベースの設定をする。
+
+::
+
+  $ cd /etc/zabbix
+  $ sudo cp zabbix_server.conf{,.orig}
+  $ sudo vi zabbix_server.conf
+  -----
+  DBHost=127.0.0.1
+  DBPassword=************
+  #DBSocket=/var/lib/mysql/mysql.sock   #<- コメントアウト
+  DBPort=5432
+  -----
+
+6-2. ZABBIXエージェント
+------------------------
+
+必要に応じて編集
+
+::
+
+  $ sudo cp zabbix_agentd.conf{,.orig}
+
+6-3. ZABBIX起動
+-----------------
+::
+
+  $ sudo service zabbix-server start
+  $ sudo service zabbix-agent start
+
+問題なく起動したか確認する
+::
+
+  $ tail -n 200 /var/log/zabbix/zabbix_server.log
+  $ tail -n 200 /var/log/zabbix/zabbix_agentd.log
+  $ ps -efww | grep zabbix
+
+6-4. 自動起動設定
+------------------
+::
+
+  $ sudo chkconfig zabbix-server on
+  $ sudo chkconfig zabbix-agent on
+
+7. ZABBIX WEBフロントエンドの初期設定
+=====================================
+
+7-1 .PHP の設定
+----------------
+
+タイムゾーンの設定を行う
+
+::
+
+  $ sudo cp /etc/php.ini{,.orig}
+  $ sudo vi /etc/php.ini
+  -----
+  date.timezone = Asia/Tokyo
+  -----
+
+7-2. Apache のリロード
+-----------------------
+
+ZABBIX導入後の設定を反映するため Apache をリロードする
+
+::
+
+  $ sudo service httpd reload
+
+7-3. ZABBIXへのアクセス・初期設定
+----------------------------------
+
+任意の端末でブラウザを起動し、ZABBIXの初期設定を行う。
+
+http://<IPADDRESS>/zabbix/
+
+.. cssclass:: table-striped
+
+   ============================ ==========================
+   項目                         操作
+   ============================ ==========================
+   [1.Welcome]                  そのまま "Next>>" をクリック
+   [2.Check of pre-requisites]  NGがなければ  "Next>>" をクリック
+   [3.Configure DB connection]  User/Password を入力し [Test connection] をクリック、"OK" であれば "Next>>" をクリック
+   [4.Zabbix server details]    この例では同一ホストで全て構成しているので、そのまま "Next>>" をクリック
+   [5.Pre-Installation summary] 内容を確認し "Next>>" をクリック
+   [6.Install]                  "OK" である事を確認し "Finish" をクリック
+   ============================ ==========================
+
+8. ZABBIXへのログイン
+=======================
+
+項目7 が完了した後、ZABBIXのログイン画面が表示される。　以下の初期ID/初期パスワードにてログインする。
+
+ID: **Admin** / Password: **zabbix**
+
+以後の監視設定は公式ドキュメントや、書籍などを参照して適当に設定を行う。

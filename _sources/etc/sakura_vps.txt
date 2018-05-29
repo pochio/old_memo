@@ -1,0 +1,305 @@
+
+==============================================
+さくらVPS + CentOS7 による外部公開サーバの構築
+==============================================
+
+.. contents::
+   :depth: 2
+
+個人で借りていた Amazon EC2 から、さくらVPS へお引っ越しした際のメモ
+
+- Amazon EC2 上で稼働していたVPSを "さくらVPS" に乗り換える
+- 独自ドメインも合わせて Amazon Route53 より、"さくらVPS" へ移行する。
+- 移行後のVPSは CentOS7 とし、firewall-cmd など、新しいコマンド郡を使う。
+- Nginx(WEBサーバ),Ghost(Blogシステム),Sphinx(ドキュメント作成)などの環境を整理、メモをどこからでも参照出来る状態にする。
+- ZOHOの無料枠を利用し、独自ドメインのメールアドレスを利用出来る状態にする。
+
+AWSの環境削除
+==============
+
+設定が複数に散らばっていて面倒だったので、一旦アカウントごと全ての削除した。 `こちら <http://blog.serverworks.co.jp/tech/2013/04/09/cancel-aws-account/>`_ に書いてある事そのままで、請求情報は見れるが、サービスは利用出来ない状態になった。
+
+さくらVPS_ と契約
+=================
+
+大した事はしないので 最小スペック_ を選択、無料期間中はさくらのDNSが利用できなかったため、無料期間を即やめて本契約をした。
+
+.. _さくらVPS: http://vps.sakura.ad.jp/
+.. _最小スペック: http://vps.sakura.ad.jp/specification/
+
+OSの再インストール
+===================
+
+CentOS7 での利用したかったので、OSの再インストール実行した。
+
+最初は HTML5版のコンソールから普通にGUIでインストールを行おうとしたが、解像度の問題でうまくいかなかった。結局ブート後、CentOSロゴが表示された段階で [TAB] キーを押し、ブートフラグに"text"を追加、テキストモードでのインストールを行った。
+
+パッケージは "minimal" で導入した。
+
+CentOS7 の初期設定
+===================
+
+OS再インストールが完了し、仮想ゲストが起動した段階で HTML5版コンソール を利用して以下の作業を行った。
+
+"policycoreutils-python" のインストール
+----------------------------------------
+
+SELinuxを設定するためのパッケージ "policycoreutils-python" をインストール
+
+.. code-block:: shell-session
+
+    # yum install policycoreutils-python
+
+ユーザ作成と、SSH公開鍵の設置
+-----------------------------
+リモートからアクセスするためのユーザを作成し、SSH公開鍵を設置する。
+
+.. code-block:: shell-session
+
+    # groupadd <groupname>
+    # useradd -g <groupname> <username>
+    # passwd <username>
+    Password: ********
+    # ssh <username>@localhost
+    Password: ********
+    $ cd .ssh
+    $ vi authorized_keys
+      ->公開鍵を登録
+    $ chmod 600 authorized_keys
+    $ exit
+
+SSH鍵を作成した端末から、ログイン出来る事を確認
+
+NICの停止
+----------
+
+設定中に余計なアクセスがないように、HTML5コンソールから NIC を停止した。
+
+.. code-block:: shell-session
+
+    # ifdown eth0
+
+"sshd"の設定
+--------------
+
+"/etc/ssh/sshd_config" に対し、下記項目の変更を行った。
+
+.. code-block:: shell-session
+
+    # cd /etc/ssh/sshd_config
+    # cp sshd_config{,.orig}
+    # vi /etc/ssh/sshd_config
+
+.. cssclass:: table-striped
+
+================================= ===================================================
+項目                              説明
+================================= ===================================================
+Port xxxx                         Listenポートの変更 (22 -> 任意のポートへ)
+AddressFamily inet                IPv4系のみリッスン
+ListenAddress                     ListenするIPアドレスの指定
+Protocol 2                        ssh2 でのアクセスのみ許可
+LoginGraceTime 30s                ログインまでの待ち時間を30秒に
+PermitRootLogin no                "root"ユーザによるログインを拒否
+StrictModes yes                   ホームディレクトリのパーミッション確認
+MaxAuthTries 1                    認証の試行回数を"1"に(1回の失敗で切断)
+MaxSessions 4                     セッション数の制限(自分が利用するだけなので少なくした)
+PubkeyAuthenticationyes           公開鍵認証を行う
+PasswordAuthentication no         パスワード認証を拒否
+AllowUsers  <userid>@<password>   接続元ユーザの制限
+================================= ===================================================
+
+SELinuxポリシーの変更
+----------------------
+
+"sshd" のポート設定を変更したので、SELinuxのポリシーも変更する(末尾は"sshd"に設定したポートを指定)
+
+.. code-block:: shell-session
+
+    # semanage port -a -t ssh_port_t -p tcp <sshd_openport>
+
+SSHを再起動し、指定したポートでListenしている事を確認する
+
+.. code-block:: shell-session
+
+    # systemctl restart sshd
+    # ss -t -l
+
+
+firewalld の参考資料
+---------------------
+
+**2016/02/18 追記**
+
+意外と firewalld で検索しに来る人がいるようなので、参考リンク貼っとく。
+
+- `Linux女子部　firewalld徹底入門！ <http://www.slideshare.net/enakai/firewalld-study-v10>`_
+- `RHEL7: How to get started with Firewalld. <http://www.certdepot.net/rhel7-get-started-firewalld/>`_
+- `Red Hat Enterprise Linux 7 - セキュリティガイド <https://access.redhat.com/documentation/ja-JP/Red_Hat_Enterprise_Linux/7/html/Security_Guide/sec-Using_Firewalls.html>`_
+
+firewalld の設定
+-----------------
+
+firewalld にポート変更した "sshd" の設定と、アクセス元IPの制限を設定する。
+
+"sshd"のポート設定
+~~~~~~~~~~~~~~~~~~~
+
+既存のルールを複製/追加する。
+
+.. code-block:: shell-session
+
+    # cd /etc/firewalld/service
+    # sudo cp /usr/lib/firewalld/services/ssh.xml ./ssh-cm.xml
+    # sudo vi ssh-cm.xml
+
+.. code-block:: diff
+
+   5c5
+   <   <port protocol="tcp" port="22"/>
+   ---
+   >   <port protocol="tcp" port="<sshd_openport>"/>
+
+ルールの入れ替え
+~~~~~~~~~~~~~~~~~
+
+デフォルトの"ssh"と、追加した"ssh-cm"を入れ替える。
+
+.. code-block:: shell-session
+
+    # firewall-cmd --permanent --remove-service='ssh' --zone=public
+    # firewall-cmd --permanent --add-service='ssh-cm' --zone=public
+
+"firewalld"のリロードと確認
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+"firewalld"をリロードし、デフォルトの"ssh"が消えて、"ssh-cm"に入れ替わっている事を確認
+
+.. code-block:: shell-session
+
+      # firewall-cmd --reload
+      # firewall-cmd --list-all
+      public (default, active)
+      interfaces: eth0
+      sources:
+      services: dhcpv6-client ssh-cm     #<-"ssh"が消え、"ssh-cm" が増えている
+      ports:
+      masquerade: no
+      forward-ports:
+      icmp-blocks:
+      rich rules:
+
+接続元IPの制限
+~~~~~~~~~~~~~~~
+
+既知のIP以外 "ssh-cm" にアクセス出来ないよう設定する。削除したい場合は "--remove-rich-rule" で削除出来る(2016/02/18追記)
+
+.. code-block:: shell-session
+
+    # firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="<ipaddress>/32" invert=true service name="ssh-cm" log prefix="ssh connection " level="info" drop'
+
+"firewalld"のリロードと確認
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+"firewalld"をリロードし、設定が反映されている事を確認
+
+.. code-block:: shell-session
+
+    # firewall-cmd --reload
+    # firewall-cmd --list-all
+    public (default, active)
+    interfaces: eth0
+    sources:
+    services: dhcpv6-client ssh-cm
+    ports:
+    masquerade: no
+    forward-ports:
+    icmp-blocks: destination-unreachable echo-reply echo-request
+    rich rules:
+      rule family="ipv4" source NOT address="<ipaddress>/32" service name="ssh-cm" drop
+
+SSHアクセスの確認
+~~~~~~~~~~~~~~~~~~
+
+停止していたNICを元に戻し、"ssh-cm"へのアクセスを許可した端末からアクセス出来る事を確認する。
+
+.. code-block:: shell-session
+
+    # ifup eth0
+
+"firewalld" のログ設定
+~~~~~~~~~~~~~~~~~~~~~~~
+
+"ssh-cm" のアクセス設定で、ログを出力するようにしたが、そのままだと "messages" に大量に書き込まれることになるので、必要に応じて以下の設定を行う。 "dmesg" は諦め(ry
+
+.. code-block:: shell-session
+
+    # vi /etc/rsyslog.conf
+    ...
+    #### RULES ####         #<-"#### RULES ####"の直下に追記する
+
+    ## Firewalld
+    # ssh-cm
+    if ( $msg contains 'ssh connection' ) then /var/log/firewalld-logs/ssh-cm.log
+    & ~
+
+ローテーションの設定 と 確認
+
+.. code-block:: shell-session
+
+    # vi /etc/logrotate.d/syslog
+    ...
+    "/var/log/firewalld-logs/ssh-cm.log" を追記
+    # logrotate -d /etc/logrotate.conf
+
+ログ出力先の作成 と rsyslog の再起動
+
+.. code-block:: shell-session
+
+    # mkdir /var/log/firewalld-logs
+    # systemctl restart rsyslog
+
+あとはアクセス許可外の端末からアクセスを試み、ログが生成される事、"messages"に出力されていない事などを確認
+
+"yum"アップデートの実行
+------------------------
+
+.. code-block:: shell-session
+
+    # yum upgrade -y && shutdown -r now
+
+
+あとはサーバの用途に応じて適当に頑張るだけ。
+
+
+独自ドメインの取得 と さくらインターネットDNSサーバへの登録
+===========================================================
+
+独自ドメインの取得は "`ムームードメイン <http://muumuu-domain.com/>`_" を利用した。
+
+ドメイン取得後、さくらインターネットの会員メニューへログインし、"`ドメインメニュー <https://help.sakura.ad.jp/app/answers/detail/a_id/2344>`_" からドメインの登録などDNSサーバの利用登録を行う。
+
+※契約した最安プランでも５ゾーンまで無料で利用出来る。
+
+※ドメインに紐付けるサーバのIPアドレスは、VPSのIPアドレスを設定
+
+ドメインの登録が完了したら"ゾーン情報"から、NSレコードを確認する。
+
+::
+
+  例)
+  ns1.dns.ne.jp.
+  ns2.dns.ne.jp.
+
+ムームードメイン_ のコントロールパネルにログインし、[ネームサーバ設定変更] を選択 さくらVPS_ へ登録したドメインを選択し、"GMOペパボ以外 のネームサーバを使用する" という項目に上記ネームサーバの設定を行う。
+
+※必要に応じてさくらVPSコントロールパネルを開き、VPSの設定にて、逆引きホスト名を紐付けたドメイン名に変更する。
+  　
+以後、24時間程度様子を見ながら、正引き/逆引きが可能となっている事を確認する。
+
+.. _ムームードメイン: http://muumuu-domain.com/
+
+Zohoを利用した独自ドメイン・メール環境の構築
+=============================================
+
+Zoho (http://www.zoho.jp/) を利用し、独自ドメインのメール環境を整理する。

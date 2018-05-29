@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>CentOS7.x + Jenkins を利用したRPMビルド環境の構築 &#8212; Memo  ドキュメント</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="Windows Server/Client" href="../windows/index.html" />
+    <link rel="prev" title="Sophos Antivirus for Linux 無償版の導入と設定" href="sophos.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../oss/index.html">OSS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../oss/sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix3.html">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3-on-cloud.html">Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">RHEL/CentOS/Fedora</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../aws/index.html">AWS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../aws/s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aws/lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a><ul>
+<li><a class="reference internal" href="#url">参考URL</a><ul>
+<li><a class="reference internal" href="#">・・・。</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#">構築環境</a></li>
+<li><a class="reference internal" href="#jenkins">Jenkins</a><ul>
+<li><a class="reference internal" href="#">依存パッケージのインストール</a></li>
+<li><a class="reference internal" href="#jenkins">Jenkins 本体のインストール</a></li>
+<li><a class="reference internal" href="#jnekins">Jnekins の初期設定</a><ul>
+<li><a class="reference internal" href="#">リッスン・ポートの変更</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#jenkins">Jenkins の起動・自動起動設定</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rpm">RPMビルド環境の構築</a></li>
+<li><a class="reference internal" href="#jenkins">Jenkins によるビルドのテスト</a><ul>
+<li><a class="reference internal" href="#rpm">RPMビルドを実行するスクリプトの設置</a></li>
+<li><a class="reference internal" href="#jenkins">&quot;jenkins&quot;ユーザへの許可</a></li>
+<li><a class="reference internal" href="#jenkins">Jenkins へのジョブの登録</a><ul>
+<li><a class="reference internal" href="#">ジョブの詳細設定#1</a></li>
+<li><a class="reference internal" href="#">ジョブの実行(失敗)</a></li>
+<li><a class="reference internal" href="#jenkins-uid-gid">Jenkins ユーザのUID/GID変更</a></li>
+<li><a class="reference internal" href="#">手動でのスクリプト実行</a><ul>
+<li><a class="reference internal" href="#jenkins">Jenkinsユーザの設定</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="sophos.html" title="Previous Chapter: Sophos Antivirus for Linux 無償版の導入と設定"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Sophos Antivi...</span>
+    </a>
+  </li>
+  <li>
+    <a href="../windows/index.html" title="Next Chapter: Windows Server/Client"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Windows Server/Client &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="centos7-x-jenkins-rpm">
+<span id="centos7-x-jenkins-rpm"></span><h1>CentOS7.x + Jenkins を利用したRPMビルド環境の構築<a class="headerlink" href="#centos7-x-jenkins-rpm" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<div class="section" id="url">
+<span id="url"></span><h2>参考URL<a class="headerlink" href="#url" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://jenkins-ci.org/">Jenkins公式</a></li>
+<li><a class="reference external" href="https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+as+a+Unix+daemon#InstallingJenkinsasaUnixdaemon-Linuxservicesystemd">Linux startup script / Linux service - systemd</a></li>
+<li><a class="reference external" href="http://int128.hatenablog.com/entry/20130111/1357834690">Jenkinsを用いた継続的RPMビルド</a></li>
+<li><a class="reference external" href="http://qiita.com/tmtysk/items/37c8c58cd59f834b1939">Jenkinsでシェルスクリプトを他のユーザとして実行</a></li>
+</ul>
+<div class="section" id="">
+<span id="id1"></span><h3>・・・。<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Jenkins初心者なので、間違えてたり、変な事してたらごめんよ(´・ω・`)</p>
+</div>
+</div>
+<div class="section" id="">
+<span id="id2"></span><h2>構築環境<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>KVM仮想ゲスト</li>
+<li>CentOS7.x (2016/03/04更新済み)<ul>
+<li>最小限のインストール</li>
+</ul>
+</li>
+<li>Firewalldは無効に</li>
+<li>SELinuxは&quot;Permissive&quot;に設定</li>
+</ul>
+</div>
+<div class="section" id="jenkins">
+<span id="jenkins"></span><h2>Jenkins<a class="headerlink" href="#jenkins" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="">
+<span id="id3"></span><h3>依存パッケージのインストール<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Javaが必要なのと、導入手順が&quot;wget&quot;で記載されていたので、まとめて入れる。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install wget java-1.8.0-openjdk -y
+</pre></div>
+</div>
+</div>
+<div class="section" id="jenkins">
+<span id="id4"></span><h3>Jenkins 本体のインストール<a class="headerlink" href="#jenkins" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p><a class="reference external" href="http://pkg.jenkins-ci.org/redhat/">公式サイトのダウンロードページ</a>に、レポジトリを利用した導入手順が公開されているので、手順に従いインストールを行う。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+<span class="gp">#</span> rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+<span class="gp">#</span> yum install jenkins -y
+</pre></div>
+</div>
+</div>
+<div class="section" id="jnekins">
+<span id="jnekins"></span><h3>Jnekins の初期設定<a class="headerlink" href="#jnekins" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id5"></span><h4>リッスン・ポートの変更<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>既定でポート &quot;8080&quot; を使用するので、必要に応じて設定を変更する。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi /etc/sysconfig/jenkins
+<span class="go">...</span>
+<span class="go">JENKINS_PORT=&quot;8008&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="jenkins">
+<span id="id6"></span><h3>Jenkins の起動・自動起動設定<a class="headerlink" href="#jenkins" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>既定ではinitスクリプトが置かれるので、<a class="reference external" href="https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+as+a+Unix+daemon#InstallingJenkinsasaUnixdaemon-Linuxservicesystemd">Wikiの情報</a>を元に&quot;systemd&quot;の設定ファイルを作成する。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> chmod -x /etc/init.d/jenkins
+<span class="gp">#</span> vi /etc/systemd/system/jenkins.service
+</pre></div>
+</div>
+<p>以下、&quot;jenkins.service&quot; に記述した内容</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[Unit]
+Description=Jenkins Daemon
+
+[Service]
+ExecStart=/usr/bin/java -jar /usr/lib/jenkins/jenkins.war
+User=jenkins
+
+[Install]
+WantedBy=multi-user.target
+</pre></div>
+</div>
+<p>上記ファイルの設置後、systemdをリロードして、起動を確認した後、自動起動を有効にする。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl daemon-reload
+<span class="gp">#</span> systemctl start jenkins
+</pre></div>
+</div>
+<p>任意の端末でブラウザを起動し http://[IPADDRESS]:8080/ へアクセス、Jenkinsおじさんが見れる事を確認した後、自動起動を有効にする。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl <span class="nb">enable</span> jenkins
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="rpm">
+<span id="rpm"></span><h2>RPMビルド環境の構築<a class="headerlink" href="#rpm" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p><a class="reference external" href="https://www.pochio.net/docs/linux/rpmdev.html">以前調べた事がある</a>のと同様の手順で、&quot;mockbuild&quot; ユーザを追加する手順で対応</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install rpmdevtools @development -y
+<span class="gp">#</span> useradd mockbuild <span class="o">&amp;&amp;</span> passwd mockbuild
+<span class="gp">#</span> su - mockbuild
+<span class="gp">$</span> rpmdev-setuptree
+</pre></div>
+</div>
+</div>
+<div class="section" id="jenkins">
+<span id="id7"></span><h2>Jenkins によるビルドのテスト<a class="headerlink" href="#jenkins" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="rpm">
+<span id="id8"></span><h3>RPMビルドを実行するスクリプトの設置<a class="headerlink" href="#rpm" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p><a class="reference external" href="http://qiita.com/tmtysk/items/37c8c58cd59f834b1939">こちらの設定例</a>を参考に、テストで Apache 2.4.18 の設定を入れてみた。実行は上記で作成した &quot;mockbuild&quot; ユーザを想定</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nb">cd</span> ~
+<span class="gp">$</span> <span class="nb">pwd</span>
+<span class="go">/home/mockbuild</span>
+<span class="gp">$</span> mkdir jenkins_jobs
+<span class="gp">$</span> vi ./jenkins_jobs/apache.sh
+</pre></div>
+</div>
+<p>&quot;apache.sh&quot; の内容、&quot;#!/bin/bash -xe&quot; については <a class="reference external" href="http://qiita.com/tmtysk/items/37c8c58cd59f834b1939">こちら</a>を参考にした。</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#!/bin/bash -xe
+
+topdir=&quot;${WORKSPACE}/rpmbuild&quot;
+rpmdir=&quot;${topdir}/RPMS/$(uname -m)&quot;
+echo -e &quot;%_topdir ${topdir}\n%_sourcedir %{_topdir}/SOURCES/%{name}-%{version}-%{release}.src&quot; &gt; &quot;${HOME}/.rpmmacros&quot;
+cd ${topdir}/SOURCES
+
+case &quot;${TARGET}&quot; in
+    */httpd-2.4.18.tar.bz2)
+        tarball=&quot;${TARGET##*/}&quot;
+        module=&quot;${tarball%.tar.*}&quot;
+        curl -O &quot;${TARGET}&quot;
+        tar jxf &quot;${tarball}&quot;
+        sed -e &#39;s,%{epoch}:,,g&#39; -i &quot;${module}/httpd.spec&quot;
+        tar jcf &quot;${tarball}&quot; &quot;${module}&quot;
+        rpmbuild -tb &quot;${tarball}&quot;
+        ;;
+    *.src.rpm)
+        curl -O &quot;${TARGET}&quot; &amp;&amp; rpmbuild --rebuild &quot;${TARGET##*/}&quot;
+        ;;
+    *.tar.bz2)
+        curl -O &quot;${TARGET}&quot; &amp;&amp; rpmbuild -tb       &quot;${TARGET##*/}&quot;
+        ;;
+    *)
+        echo &#39;environment variable TARGET must be set.&#39;
+        exit 1
+        ;;
+esac
+exit $RETVAL
+</pre></div>
+</div>
+<p>作成した &quot;apache.sh&quot; に実行権限を付与し、&quot;mocubuild&quot;ユーザを抜ける。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> chmod +x ./jenkins_jobs/apache.sh
+<span class="gp">$</span> <span class="nb">exit</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="jenkins">
+<span id="id9"></span><h3>&quot;jenkins&quot;ユーザへの許可<a class="headerlink" href="#jenkins" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>上記と同様に<a class="reference external" href="http://qiita.com/tmtysk/items/37c8c58cd59f834b1939">こちら</a>を参考にし、&quot;jenkins&quot;ユーザがスクリプトを実行出来るようにする。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> visudo
+<span class="go">...</span>
+<span class="gp">#</span>Defaults    requiretty
+<span class="go">Defaults:jenkins !requiretty</span>
+<span class="go">...</span>
+<span class="gp">#</span><span class="c1"># 末尾に追記！</span>
+<span class="go">jenkins ALL=mockbuild NOPASSWD:SETENV: /home/mockbuild/jenkins_jobs/apache.sh</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="jenkins">
+<span id="id10"></span><h3>Jenkins へのジョブの登録<a class="headerlink" href="#jenkins" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<ol class="simple">
+<li>任意の端末にてブラウザを起動しJenkinsにアクセス (http://[IPADDRESS]:8080/)</li>
+<li>トップ画面が表示されたら &quot;<b>新しいジョブ</b> を作成して下さい。&quot; をクリック</li>
+<li>ジョブ名を入力し、&quot;フリースタイル・プロジェクトのビルド&quot; を選択し、下部の [ OK ] をクリック</li>
+</ol>
+<div class="section" id="">
+<span id="id11"></span><h4>ジョブの詳細設定#1<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<ul>
+<li><p class="first">必要に応じて説明を入力</p>
+</li>
+<li><p class="first">ビルドのパラメータ化にチェックを入れる</p>
+<ul class="simple">
+<li>選択(Choice)</li>
+<li>名前: TARGET</li>
+<li>Apache,APR,APR-Util のダウンロード・パスを入力http://ftp.jaist.ac.jp/pub/apache/apr/apr-1.5.2.tar.bz2http://ftp.jaist.ac.jp/pub/apache/apr/apr-util-1.5.4.tar.bz2http://ftp.jaist.ac.jp/pub/apache/httpd/httpd-2.4.18.tar.bz2</li>
+</ul>
+</li>
+<li><p class="first">ビルド</p>
+<ul>
+<li><p class="first">ビルド手順の追加 - シェルの実行 を選択</p>
+</li>
+<li><p class="first">下記シェルスクリプトの設定を入力</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="go">export WORKSPACE=/home/mockbuild</span>
+<span class="go">sudo -E -u mockbuild /home/mockbuild/jenkins_jobs/apache.sh</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">保存</p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="">
+<span id="id12"></span><h4>ジョブの実行(失敗)<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>ここで手動でジョブを実行してみる(パラメータ付きビルド実行)・・・で、見事に失敗(´・ω・`)ジョブのコンソール出力を見たら、sudo で失敗したっぽい。　で、/var/log/secure を見たら・・・</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># tail /var/log/secure
+...
+sudo: pam_succeed_if(sudo:auth): requirement &quot;uid &gt;= 1000&quot; not met by user &quot;jenkins&quot;
+# id -a jenkins
+uid=996(jenkins) gid=994(jenkins) groups=994(jenkins)
+</pre></div>
+</div>
+<p>んごぉ！！　う、う〜ん。。。</p>
+</div>
+<div class="section" id="jenkins-uid-gid">
+<span id="jenkins-uid-gid"></span><h4>Jenkins ユーザのUID/GID変更<a class="headerlink" href="#jenkins-uid-gid" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>少し調べてみて&quot;SSH Plugin&quot;使おうか・・・とも考えたけど、もう面倒になったので一旦Jenkinsを止めて、適当に空いてるUIDへ変更・・・</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl stop jenkins
+<span class="gp">#</span> groupmod -g <span class="m">1002</span> jenkins
+<span class="gp">#</span> usermod  -u <span class="m">1002</span> jenkins
+</pre></div>
+</div>
+<p>旧UID/GIDが利用しているファイル/ディレクトリを検索・・・</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> find / -user <span class="m">996</span> -print
+<span class="gp">#</span> find / -group <span class="m">994</span> -print
+</pre></div>
+</div>
+<p>大体 /var 下だったので修正した。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> find /var -user <span class="m">996</span> -print  <span class="p">|</span> xargs -t chown jenkins
+<span class="gp">#</span> find /var -group <span class="m">994</span> -print <span class="p">|</span> xargs -t chgrp jenkins
+</pre></div>
+</div>
+<p>で、Jenkins再起動</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl start jenkins
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id13"></span><h4>手動でのスクリプト実行<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>一回失敗してダメだったので、今度は手動でのスクリプト実行でテストしてからにする。</p>
+<div class="section" id="jenkins">
+<span id="id14"></span><h5>Jenkinsユーザの設定<a class="headerlink" href="#jenkins" title="このヘッドラインへのパーマリンク">¶</a></h5>
+<p>&quot;jenkins&quot;ユーザでシェルを使えるようにする。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> chsh jenkins
+<span class="go">jenkins のシェルを変更します。</span>
+<span class="go">新しいシェル [/bin/false]: /bin/bash</span>
+<span class="go">シェルを変更しました。</span>
+</pre></div>
+</div>
+<p>Jenkinsでジョブを実行するときと同様に環境変数を設定し、スクリプトを実行する。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> su - jenkins
+<span class="gp">$</span> <span class="nb">export</span> <span class="nb">export</span> <span class="nv">WORKSPACE</span><span class="o">=</span>/home/mockbuild
+<span class="gp">$</span> <span class="nb">export</span> <span class="nv">TARGET</span><span class="o">=</span>http://ftp.jaist.ac.jp/pub/apache/apr/apr-1.5.2.tar.bz2
+<span class="gp">$</span> sudo -E -u mockbuild /home/mockbuild/jenkins_jobs/apache.sh
+</pre></div>
+</div>
+<p>繰り返し何度か試験を行い、問題がなければjenkins側での実行などの対応を進める。シェルスクリプトの内容ももっとなんとかしたいし、最新のバージョンを拾って勝手にRPM作るとこまで試したいし、まだまだ色々ある。。</p>
+<p>めんどくさかった。。</p>
+<p>以上</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, pochio.<br/>
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5 で生成しました。<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

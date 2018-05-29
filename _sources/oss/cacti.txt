@@ -1,0 +1,200 @@
+
+# Cacti のインストール
+
+さっくり入れるだけ入れて欲しいと言われたのでメモを残す。
+
+## 参考URL
+
+- [Cacti公式](http://www.cacti.net/)
+- [モニタリングツール「Cacti」でのリソース監視](http://knowledge.sakura.ad.jp/tech/618/)
+- [Cactiテンプレートの探し方と適用方法（F5 BIG-IPの例）](http://techblog.clara.jp/2014/07/how-to-search-cacti-template/)
+
+    テンプレート探しは下記で行う。
+
+- [Cacti Template](http://docs.cacti.net/templates)
+- [Forum Cacti](http://forums.cacti.net/)
+- [GitHub Search:cacti tamplate](https://github.com/search?utf8=%E2%9C%93&q=cacti+template)
+
+## 導入環境
+
+- CentOS6.x
+- iptables/SELinuxなどは無効化
+- EPELを有効化
+
+    ```
+    # yum install epel-release
+    ```
+
+## インストール
+
+### MySQL レポジトリの準備
+
+[公式サイト](https://dev.mysql.com/downloads/repo/yum/)から対象となるRPMをダウンロード
+
+### MySQL のインストール
+
+```bash
+# yum groupinstall "MySQL Database server"
+```
+
+### Cacti, Webサーバのインストール
+
+```bash
+# yum install --enablerepo=epel cacti @web-server
+```
+
+### 初期設定
+
+#### MySQL の初期設定
+
+```bash
+# chkconfig mysqld on
+# mv /etc/my.cnf{,.orig}
+# vi /etc/my.cnf
+  =>お好みで適当に
+# service mysqld start
+# cat /var/log/mysql/error.log | egrep -i password
+# mysql_secure_installation
+  =>お好みで適当に
+# mysql -u root -p
+```
+
+```
+mysql> CREATE DATABASE cacti;
+mysql> GRANT ALL PRIVILEGES ON cacti.* TO cactiuser@localhost IDENTIFIED BY 'cactiuser';
+mysql> FLUSH PRIVILEGES;
+mysql> exit
+```
+
+#### Cacti の初期設定
+
+```bash
+# cd /etc/cacti
+# cp db.php{,.orig}
+# vi db.php
+```
+
+```
+$database_type = "mysql";           # 使用するデータベース種別
+$database_default = "cacti";        # データベース名
+$database_hostname = "localhost";   # ホスト名
+$database_username = "cactiuser";   # データベース接続に使用するユーザー名
+$database_password = "cactiuser";   # データベース接続に使用するパスワード
+$database_port = "3306";            # データベース接続に使用するポート番号
+$database_ssl = false;              # データベース接続にSSLを使うか否か
+```
+
+```bash
+# mysql -u cactiuser -p cacti < /usr/share/doc/cacti-0.8.8b/cacti.sql
+Enter password: ********
+```
+
+#### Apache の初期設定
+
+```bash
+# cd /etc/httpd/conf.d
+# cp cacti.conf{,.orig}
+  =>Require host, Allow from でアクセスを許可するIPを追加
+```
+
+#### Cron の設定
+
+```bash
+# vi /etc/cron.d/cacti
+```
+
+```
+# 有効化
+*/5 * * * *	cacti	/usr/bin/php /usr/share/cacti/poller.php > /dev/null 2>&1
+```
+
+### Apache の起動
+
+```bash
+# chkconfig httpd on
+# service httpd start
+```
+
+### Cacti へのログイン
+
+あとはログインして適当に設定する。
+
+http://**[IPADDRESS]**/cacti/
+
+(ID: admin / PW: admin ※初期値)
+
+
+## Cacti の設定メモ
+
+### 監視間隔
+
+#### 参考URL
+
+- [CentOS7 Cactiのデータ取得間隔と保存期間](http://www.unix-power.net/centos7/cacti_rows.html)
+- [Cactiのグラフを1分間隔で出力するには + おまけ](http://sarface2012.hatenablog.com/entry/2012/06/21/224051)
+
+#### 対応例
+
+##### Cacti の設定
+
+1. Cactiにアクセス
+2. 左側のメニューから [Configuration] - [Settings] を選択
+3. 上部メニューにて [Poller] を選択
+4. **Poller Interval**,**Cron Interval** の値を、"Every 5 Minutes" から **"Every Minutes"** へ変更
+5. Cacti画面の右下にある **Save** にて保存
+6. CactiのサーバへSSHでログインし、Cacti の cron 設定を変更する
+
+  ```bash
+  # vi /etc/cron.d/cacti
+  ```
+
+  ```text
+  #*/5 * * * *	cacti	/usr/bin/php /usr/share/cacti/poller.php > /dev/null 2>&1
+  * * * * *	cacti	/usr/bin/php /usr/share/cacti/poller.php > /dev/null 2>&1
+  ```
+
+##### Data Template の編集
+
+この段階では生成されるグラフがまだ５分単位となっているので、各グラフの既定値を変更する。下記の操作を必要なテンプレート全てに行う。
+
+1. 左側のメニューから [Data Templates] を選択
+2. グラフを生成しているテンプレートを選択
+3. **Step** の値を **<FONT color="red">300</FONT>** 秒から **<FONT color="red">60</FONT>** 秒に変更
+4. ウインドウ下部にある **Save** にて保存
+
+##### グラフの更新
+
+すでに５分毎で作成されている既存のグラフには上記の変更は反映されない。[ここ](http://sarface2012.hatenablog.com/entry/2012/06/21/224051)を見て対処するか、グラフを１から再作成する。　変更が反映されたかどうかはグラフビューから拡大表示して確認すればわかる。
+
+### Tomcat
+
+#### 参考URL
+
+- [tomcat5.5/6のJVM RAM周りををcactiで監視する](http://triplesky.blogspot.jp/2013/12/tomcat556jvm-ramcacti.html)
+
+#### 対応例
+
+1. [フォーラムのここ](http://forums.cacti.net/about19761.html)からXMLをダウンロード
+2. Cacti WebGUI の [Import Tamplates] にて、XMLをインポートする
+3. [Data Template] に jvm* なテンプレートが増えているので、それを選択
+4. SNMP Community, Port など、ホスト側の設定と異なるようであれば設定を入力し保存する
+5. "4"の変更をすべての jvm* に反映
+6. ホストに紐づけてグラフを作成、一定時間後グラフが更新されていっていることを確認
+
+### DiskI/O
+
+#### 参考URL
+
+- [Cacti-テンプレート追加-Disk IO監視](https://sites.google.com/site/riyo10/computer/cacti#TOC-Disk-IO-)
+
+#### 対応例
+
+1. [公式のテンプレートページ](http://docs.cacti.net/templates)から tar.gz ファイルをダウンロード
+2. tar.gz を展開し、中にある "disk_io.xml" を /usr/share/cacti/resource/snmp_queries に設置
+3. もう１つのファイル "cacti087d_data_query_snmp_-\_get_disk_io.xml" を Cacti WebGUI にてインポート
+4. インポートにエーがない事を確認、必要に応じて各ホストへの監視設定を実施http://docs.cacti.net/template:host:server:windows_2000xp_host
+
+### Windows
+
+公式サイトにテンプレートが置いてあるのをインポートするだけで行ける(かもしれない)
+http://docs.cacti.net/template:host:server:windows_2000xp_host

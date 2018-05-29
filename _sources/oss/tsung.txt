@@ -1,0 +1,204 @@
+
+# Tsung によるウェブサイトの負荷試験
+
+ウェブサイトの負荷を計測するために Tsung を試してみた。
+
+## 参考URL
+
+  - [Tsung で負荷試験](http://qiita.com/Hexa/items/323d69ee19a68f217191)
+  - [【ウェブサイトのロードテストをする】 第3回 Tsung編](http://www.adoc.co.jp/blog/e000225.html)
+  - [Tsungによるwebsocket負荷テスト（日本語説明付き）](https://gist.github.com/georgeOsdDev/9988060)
+
+## OS
+
+CentOS 7.x を導入し、firewalldとSELinux無効化、アップデートして再起動
+
+```shell-session
+# systemctl disable firewalld
+# systemctl stop firewalld
+# setenforce 0
+# sed -i  s/SELINUX=enforcing/SELINUX=disabled/g /etc/selinux/config
+# yum upgrade -y && shutdown -r now
+```
+
+## インストール
+
+EPELかソースから導入する。Tsungを構成するノードが複数ある場合は、全ノードにて同様にインストールを行う。
+
+### EPEL
+
+EPELにあったのでEPELから導入、AmazonLinuxなど依存関係でダメな場合は次項のソースから導入を参照
+
+```shell-session
+# yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+# sed -i s/enabled=1/enabled=0/g /etc/yum.repos.d/epel.repo
+# yum --enablerepo=epel install tsung
+```
+
+最新は[1.6.0のようだけど](http://tsung.erlang-projects.org/)、EPELから導入出来たのは "tsung-1.5.1-2.el7.x86_64" だった
+
+### ソースから導入
+
+#### 依存するパッケージの導入
+
+```shell-session
+# yum install @development
+```
+
+#### ソースを拾ってコンパイル
+
+github からソースを拾い適当にコンパイルして入れる
+
+```shell-session
+# cd /usr/local/src ; cd $_
+# git clone https://github.com/processone/tsung
+# cd tsung
+# ./configure && make && make install ; echo $?
+```
+
+## ノード間アクセス用のSSH鍵作成
+
+```shell-session
+# ssh-keygen -N '' -t rsa -b 2048
+# cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
+# ssh localhost
+```
+
+## SSH鍵の展開
+
+```shell-session
+# ssh <IPADDRESS>  #<-構成ノードの全IPを叩いてホスト鍵を保存
+```
+
+authorized_keys, known_hosts, id_pub などを全ノードに展開する
+
+## hosts の設定
+
+設定に合わせて適当に作って全ノードに展開する
+
+```shell-session
+# vi /etc/hosts
+XXX.XXX.XXX.XXX    A
+XXX.XXX.XXX.XXX    B
+XXX.XXX.XXX.XXX    C
+```
+
+## 設定ファイルの作成
+
+```shell-session
+# vi ~/tsung.xml
+```
+
+```xml
+<?xml version="1.0"?>
+<!-- インストールしたTsungのPathとあっていること -->
+<!DOCTYPE tsung SYSTEM "/usr/share/tsung/tsung-1.0.dtd">
+<tsung loglevel="notice" version="1.0">
+
+  <!-- 負荷テストを実施するTsungクライアントの設定 -->
+  <clients>
+    <client host="A" weight="1" cpu="2" maxusers="40000">
+      <ip value="XXX.XXX.XXX.XXX"/>
+    </client>
+    <client host="B" weight="1" cpu="2" maxusers="40000">
+      <ip value="XXX.XXX.XXX.XXX"/>
+    </client>
+    <client host="C" weight="1" cpu="2" maxusers="40000">
+      <ip value="XXX.XXX.XXX.XXX"/>
+    </client>
+  </clients>
+
+  <!-- テスト対象のサーバー -->
+  <servers>
+    <server host="<httpサーバのIPorドメイン>" port="80" type="tcp"/>
+  </servers>
+
+  <!-- コネクション数の指定 -->
+  <load>
+    <!--
+      5分間で毎秒8ユーザーずつ最大1000ユーザーまでクライアントを生成する。
+    -->
+    <arrivalphase phase="1" duration="5" unit="minute">
+      <users maxnumber="1000" arrivalrate="8" unit="second"/>
+    </arrivalphase>
+
+    <!--
+      10分間で毎秒8ユーザーずつ最大3000ユーザーまでクライアントを生成する。
+    -->
+    <arrivalphase phase="2" duration="10" unit="minute">
+      <users maxnumber="3000" arrivalrate="8" unit="second"/>
+    </arrivalphase>
+    <!--
+      15分間で毎秒10ユーザーずつ最大10800ユーザーまでクライアントを生成する。
+    -->
+    <arrivalphase phase="3" duration="15" unit="minute">
+      <users maxnumber="10800" arrivalrate="10" unit="second"/>
+    </arrivalphase>
+  </load>
+
+  <!--
+    実際のクライアントの処理内容
+    生成されたクライアントはいずれかのsessionを行うことになるため、probabilityの合計値は100とする必要がある
+  -->
+  <sessions>
+    <!--
+      接続時に index.html を 100回 リクエストする。
+    -->
+    <session probability="100" name="ab" type="ts_http">
+      <for from="1" to="5" var="i">
+        <request> <http url="/index.html" method="GET" version="1.1"/> </request>
+      </for>
+    </session>
+    <!-- 他、画像やソケットなどトップページを構成する要素があれば追記する -->
+  </sessions>
+
+</tsung>
+```
+
+## 動作確認
+
+```shell-session
+# tsung -f ~/tsung.xml start
+```
+
+アタックされた側・・・
+
+```shell-session
+[root@vm154 httpd]# w
+ 13:41:36 up 1 day,  2:37,  2 users,  load average: 142.11, 47.35, 16.88
+USER     TTY        LOGIN@   IDLE   JCPU   PCPU WHAT
+senokuch pts/0     11:11    4.00s  0.82s  9.87s /bin/xfce4-terminal
+senokuch pts/1     13:12    1.00s  0.54s  0.43s ssh -XC -o ServerAliveInterval=
+```
+
+楽しい!!! ✌('ω'✌ )三✌('ω')✌三( ✌'ω')✌
+
+### 注意点
+
+  - 実行中は ${HOME}/.tsung/log/YYYYMMDD-HHMM/tsung_controller\@<hostname>.log を見る。
+  - 下記のようなメッセージがログに出力された場合、重い？CPU性能が足りていない？
+  ```shell-session
+  =ERROR REPORT==== 16-Oct-2015::11:09:02 ===
+  ** Node tsung2@vm170 not responding **
+  ** Removing (timedout) connection **
+  ```
+  - この場合、XMLに記載されたCPUの値を調整する(コア-2 がおすすめ)
+  - これは実際に動かしてみないとわからないので要試行錯誤。。。
+
+## グラフレポートの出力
+
+tsung_stats.pl にてログファイルからHTML形式のレポートを生成する。
+
+### Perlモジュールのインストール
+
+```shell-session
+# yum install perl-App-cpanminus @development gnuplot
+# cpanm Template
+```
+
+```shell-session
+# mkdir report ; cd $_
+# /usr/lib64/tsung/bin/tsung_stats.pl --stats /root/.tsung/log/YYYYMMDD-HHMM/tsung_controller\@<hostname>.log
+```
+
+カレントディレクトリにレポートのHTML・画像などが生成されるので適当に見る。

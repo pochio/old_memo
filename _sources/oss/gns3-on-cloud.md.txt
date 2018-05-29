@@ -1,0 +1,106 @@
+
+# Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築 
+
+自宅鯖を減らす一環でちょと調査、まだちゃんと動作確認出来ていないけど一旦メモ ｃ⌒っﾟдﾟ)っφ
+
+## 環境
+
+Nested　または ベアメタルな環境を想定
+
+1. [Digital Ocean (Nested)](https://m.do.co/c/651efba6cb52) 
+2. [Packet.net (Baremetal)](https://www.packet.net/)
+
+- AWS/GCPはNestedできない。またConohaやさくらも然り (ってかDigitalOcean以外でどっか良さ気なとこある？)
+- packet は [Cisco VIRL](http://virl.cisco.com/cloud/) のとこから登録しにいくと $25 クレジット貰える
+
+## GNS3 サーバの構築
+
+とりあえずDigitalOceanで、Ubutnu16.04LTSのDropletを、シンガポールリージョンで作成　
+
+### OSの更新
+
+```shell-session
+# apt-get upadte
+# apt-get upgrade -y
+```
+
+### ファイアウォールの有効化
+
+作業するためのSSHと、GNS3 Server にアクセスするため ufw を有効にし接続元IPを制限する。
+
+```shell-session
+# ufw enable
+# ufw allow from xxx.xxx.xxx.xxx
+# ufw status
+  =>確認
+```
+
+### GNS3 のインストール
+
+[Linux Install Guide](https://gns3.com/support/docs/linux-installation)を参考にインストールを行う。
+
+```shell-session
+# add-apt-repository ppa:gns3/ppa
+# apt-get update
+# apt-get install gns3-server
+# dpkg --add-architecture i386
+# apt-get update
+# apt-get install gns3-iou
+```
+
+### VMware Workstation Player のインストール
+
+公式からVMware Workstation Player をダンロード、SCPにて転送しインストールを行う。
+
+```shell-session
+# chmod +x VMware-Player-12.1.1-3770994.x86_64.bundle
+# ./VMware-Player-12.1.1-3770994.x86_64.bundle
+```
+
+### GNS3サーバの起動設定
+
+systemd　用の設定を作成する。
+
+```shell-session
+# vi /etc/systemd/system/gns3server.service
+```
+
+```text
+[Unit]
+Description=GNS3 server
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/gns3server
+
+# Give a reasonable amount of time for the server to start up/shut down
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### GNS3サーバの起動
+
+自動起動を有効にした後、手動で起動する。
+
+```shell-session
+# systemctl daemon-reload
+# systemctl enable gns3server
+# systemctl start gns3server
+```
+
+## GNS3クライアントのインストール
+
+1. Windows　または Linux で、GNS3本体のみのインストールを行う。
+2. GNS3インストール後 [Edit] -> [Preferences] を選択
+3. 各項目の "Enable local server" のチェックを外して "Apply"　をクリック
+4. 項目"Server"を開き、"Remote Servers" にて上記で作成したサーバを登録する
+5. (以降、未確認)IOSのインポートなど各種設定を行う。
+
+以上、ｃ⌒っﾟдﾟ)っφ　ﾒﾓﾒﾓ...
+

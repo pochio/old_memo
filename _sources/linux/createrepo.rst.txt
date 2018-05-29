@@ -1,0 +1,70 @@
+
+============================
+ローカル・リポジトリの構築
+============================
+
+ローカルにリポジトリを作成し利用するための手順
+
+.. contents::
+   :depth: 2
+
+ローカル・リポジトリ作成方法
+=============================
+
+RPMをローカルリポジトリ および "yum"コマンドで展開するため、まずローカルリポジトリの作成を行う。
+
+WEB経由でリポジトリ利用出来るようにするため、先にApacheのインストールを行う。
+::
+
+  $ sudo yum groupinstall "Web Server" 
+  $ sudo systemctl start httpd
+
+続けてリポジトリを作成するためのコマンド "createrepo" のパッケージをインストールする。
+::
+
+  $ sudo yum install createrepo -y
+
+Apacheで公開出来る場所に、ローカル・リポジトリで利用するディレクトリを作成
+::
+
+  $ cd /var/www/html
+  $ sudo mkdir localrepo
+
+"createrepo" コマンドにより、リポジトリを作成する。
+::
+
+  $ sudo createrepo ./localrepo
+
+このリポジトリ配下に、事前に作成していたRPMパッケージを配置する。
+::
+
+  $ sudo cp -rp /home/mockbuild/rpmbuild/RPMS/* /var/www/localrepo
+
+リポジトリの内容を更新し、パッケージを認識させる。
+::
+
+  $ sudo createrepo --update /var/www/html/localrepo
+
+
+ローカル・リポジトリの利用方法
+==============================
+
+リポジトリを利用するクライアントで、リポジトリの定義ファイルを作成する。GPGは確認しない(gpgcheck=0)としている。GPGについては後述する "`RPMパッケージと、ローカル・リポジトリへの署名方法 <rpmrepo_gpgsign.html>`_" を参照
+::
+
+  $ sudo vi /etc/yum.repos.d/localrepo.repo
+  ...
+  [localrepo]
+  name=Local Repository
+  failovermethod=priority
+  baseurl=http://<repository_ipaddress>/localrepo
+  enabled=1
+  gpgcheck=0
+
+定義ファイルを作成したら、アクセス出来る事を確認する。
+::
+
+  $ sudo yum check-update
+  
+あとはリポジトリにRPMを追加する度に "createrepo --update" を実行していくだけ。
+

@@ -1,0 +1,104 @@
+
+# yum-cron による自動アップデート
+
+[例のglibcの祭りの際](http://d.hatena.ne.jp/Kango/20160217/1455725647)、Critical なものは自動でアップデートしても良くね？という話がさらりと出てきたので一応メモ
+
+## 注意
+
+#### CentOS の場合
+
+"yum-security-plugin" はCentOSでは動かない模様・・・残念。。
+
+[https://www.centos.org/forums/viewtopic.php?f=13&t=54597](https://www.centos.org/forums/viewtopic.php?f=13&t=54597)
+
+<font size="2">
+The yum-plugin-security package does not work on CentOS and there have been several long and involved threads on the mailing list discussing this and the outcome is that it probably never will. The required metadata is not present in the CentOS yum repositories to allow it to function. EPEL does supply this data which is why you see some mentions of security updates available but it does not cover any of the packages in the CentOS repos.
+</font>
+
+#### Amazon Linux の場合
+
+リスクレベルの指定(--sec-severity)は動作しなかったけど、"--security" でセキュリティに限定したパッケージアップデートは可能なようだった。
+
+## 参考URL
+
+- [RHN:yum を制限して、セキュリティアップデートだけを一覧表示してインストールできますか?](https://access.redhat.com/ja/solutions/207493)
+- [RHEL6:導入ガイド-6.4.3. プラグインの詳細](https://access.redhat.com/documentation/ja-JP/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/sec-Plugin_Descriptions.html)
+- [Yumのセキュリティプラグイン](http://dev.classmethod.jp/server-side/os/yum-plugin-security/)
+
+## yum-cron と security plugin のインスコ
+
+ヤッムヤッム！！(　ﾟ∀ﾟ)o彡°
+
+```shell-session
+# yum install yum-cron yum-plugin-security
+```
+
+※RHEL7系の場合 "yum-plugin-security" はなくなり統合されてる？模様
+
+## 設定
+
+さっくり書き換えるだけ。
+
+### RHEL/CentOS7の場合
+
+```shell-session
+# cd /etc/yum/
+# cp yum-cron.conf{,.orig}
+# vi yum-cron.conf
+```
+
+変更点だけ列挙
+
+```text
+## リスクレベル Critical のものだけ適用、 ★CentOSの場合は "default" のままにする。
+update_cmd = minimal-security-severity:Critical
+
+## 自動的に適用
+apply_updates = yes
+
+## システム名
+system_name = Underboob
+
+## メール送信元/宛先アドレス
+email_from = root@localhost
+email_to = root
+```
+
+### RHEL6/CentOS6の場合
+
+```shell-session
+# cd /etc/sysconfig
+# cp yum-cron{,.orig}
+# vi yum-cron
+```
+
+変更点だけ列挙
+
+```text
+## リスクレベル Critical のものだけ適用、CentOSの場合は "update" にする。
+YUM_PARAMETER="--sec-severity=Critical update-minimal"
+
+## メール送信先
+MAILTO=root
+
+## システム名
+SYSTEMNAME="Underboob"
+```
+
+## サービスの有効化と起動
+
+### RHEL/CentOS7系の場合
+
+```shell-session
+# systemctl enable yum-cron
+# systemctl start yum-cron
+```
+
+### RHEL/CentOS6系の場合
+
+```shell-session
+# chkconfig yum-cron on
+# servie yum-cron start
+```
+
+以上

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Tsung によるウェブサイトの負荷試験 &#8212; Memo  ドキュメント</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="kSar7 による sysstat(sar) 情報のグラフ表示" href="ksar7.html" />
+    <link rel="prev" title="ZABBIX 3.0.1 のインストール" href="zabbix3.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">OSS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zabbix3.html">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gns3-on-cloud.html">Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../linux/index.html">RHEL/CentOS/Fedora</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../aws/index.html">AWS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../aws/s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aws/lsyncd.html">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Tsung によるウェブサイトの負荷試験</a><ul>
+<li><a class="reference internal" href="#url">参考URL</a></li>
+<li><a class="reference internal" href="#os">OS</a></li>
+<li><a class="reference internal" href="#">インストール</a><ul>
+<li><a class="reference internal" href="#epel">EPEL</a></li>
+<li><a class="reference internal" href="#">ソースから導入</a><ul>
+<li><a class="reference internal" href="#">依存するパッケージの導入</a></li>
+<li><a class="reference internal" href="#">ソースを拾ってコンパイル</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ssh">ノード間アクセス用のSSH鍵作成</a></li>
+<li><a class="reference internal" href="#ssh">SSH鍵の展開</a></li>
+<li><a class="reference internal" href="#hosts">hosts の設定</a></li>
+<li><a class="reference internal" href="#">設定ファイルの作成</a></li>
+<li><a class="reference internal" href="#">動作確認</a><ul>
+<li><a class="reference internal" href="#">注意点</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#">グラフレポートの出力</a><ul>
+<li><a class="reference internal" href="#perl">Perlモジュールのインストール</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="zabbix3.html" title="Previous Chapter: ZABBIX 3.0.1 のインストール"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; ZABBIX 3.0.1 のインストール</span>
+    </a>
+  </li>
+  <li>
+    <a href="ksar7.html" title="Next Chapter: kSar7 による sysstat(sar) 情報のグラフ表示"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">kSar7 による sys... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="tsung">
+<span id="tsung"></span><h1>Tsung によるウェブサイトの負荷試験<a class="headerlink" href="#tsung" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>ウェブサイトの負荷を計測するために Tsung を試してみた。</p>
+<div class="section" id="url">
+<span id="url"></span><h2>参考URL<a class="headerlink" href="#url" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://qiita.com/Hexa/items/323d69ee19a68f217191">Tsung で負荷試験</a></li>
+<li><a class="reference external" href="http://www.adoc.co.jp/blog/e000225.html">【ウェブサイトのロードテストをする】 第3回 Tsung編</a></li>
+<li><a class="reference external" href="https://gist.github.com/georgeOsdDev/9988060">Tsungによるwebsocket負荷テスト（日本語説明付き）</a></li>
+</ul>
+</div>
+<div class="section" id="os">
+<span id="os"></span><h2>OS<a class="headerlink" href="#os" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>CentOS 7.x を導入し、firewalldとSELinux無効化、アップデートして再起動</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> systemctl disable firewalld
+<span class="gp">#</span> systemctl stop firewalld
+<span class="gp">#</span> setenforce <span class="m">0</span>
+<span class="gp">#</span> sed -i  s/SELINUX<span class="o">=</span>enforcing/SELINUX<span class="o">=</span>disabled/g /etc/selinux/config
+<span class="gp">#</span> yum upgrade -y <span class="o">&amp;&amp;</span> shutdown -r now
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id1"></span><h2>インストール<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>EPELかソースから導入する。Tsungを構成するノードが複数ある場合は、全ノードにて同様にインストールを行う。</p>
+<div class="section" id="epel">
+<span id="epel"></span><h3>EPEL<a class="headerlink" href="#epel" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>EPELにあったのでEPELから導入、AmazonLinuxなど依存関係でダメな場合は次項のソースから導入を参照</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+<span class="gp">#</span> sed -i s/enabled<span class="o">=</span><span class="m">1</span>/enabled<span class="o">=</span><span class="m">0</span>/g /etc/yum.repos.d/epel.repo
+<span class="gp">#</span> yum --enablerepo<span class="o">=</span>epel install tsung
+</pre></div>
+</div>
+<p>最新は<a class="reference external" href="http://tsung.erlang-projects.org/">1.6.0のようだけど</a>、EPELから導入出来たのは &quot;tsung-1.5.1-2.el7.x86_64&quot; だった</p>
+</div>
+<div class="section" id="">
+<span id="id2"></span><h3>ソースから導入<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id3"></span><h4>依存するパッケージの導入<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install @development
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id4"></span><h4>ソースを拾ってコンパイル<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>github からソースを拾い適当にコンパイルして入れる</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nb">cd</span> /usr/local/src <span class="p">;</span> <span class="nb">cd</span> <span class="nv">$_</span>
+<span class="gp">#</span> git clone https://github.com/processone/tsung
+<span class="gp">#</span> <span class="nb">cd</span> tsung
+<span class="gp">#</span> ./configure <span class="o">&amp;&amp;</span> make <span class="o">&amp;&amp;</span> make install <span class="p">;</span> <span class="nb">echo</span> <span class="nv">$?</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="ssh">
+<span id="ssh"></span><h2>ノード間アクセス用のSSH鍵作成<a class="headerlink" href="#ssh" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> ssh-keygen -N <span class="s1">&#39;&#39;</span> -t rsa -b <span class="m">2048</span>
+<span class="gp">#</span> cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
+<span class="gp">#</span> ssh localhost
+</pre></div>
+</div>
+</div>
+<div class="section" id="ssh">
+<span id="id5"></span><h2>SSH鍵の展開<a class="headerlink" href="#ssh" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> ssh &lt;IPADDRESS&gt;  <span class="c1">#&lt;-構成ノードの全IPを叩いてホスト鍵を保存</span>
+</pre></div>
+</div>
+<p>authorized_keys, known_hosts, id_pub などを全ノードに展開する</p>
+</div>
+<div class="section" id="hosts">
+<span id="hosts"></span><h2>hosts の設定<a class="headerlink" href="#hosts" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>設定に合わせて適当に作って全ノードに展開する</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi /etc/hosts
+<span class="go">XXX.XXX.XXX.XXX    A</span>
+<span class="go">XXX.XXX.XXX.XXX    B</span>
+<span class="go">XXX.XXX.XXX.XXX    C</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id6"></span><h2>設定ファイルの作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi ~/tsung.xml
+</pre></div>
+</div>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span class="c">&lt;!-- インストールしたTsungのPathとあっていること --&gt;</span>
+<span class="cp">&lt;!DOCTYPE tsung SYSTEM &quot;/usr/share/tsung/tsung-1.0.dtd&quot;&gt;</span>
+<span class="nt">&lt;tsung</span> <span class="na">loglevel=</span><span class="s">&quot;notice&quot;</span> <span class="na">version=</span><span class="s">&quot;1.0&quot;</span><span class="nt">&gt;</span>
+
+  <span class="c">&lt;!-- 負荷テストを実施するTsungクライアントの設定 --&gt;</span>
+  <span class="nt">&lt;clients&gt;</span>
+    <span class="nt">&lt;client</span> <span class="na">host=</span><span class="s">&quot;A&quot;</span> <span class="na">weight=</span><span class="s">&quot;1&quot;</span> <span class="na">cpu=</span><span class="s">&quot;2&quot;</span> <span class="na">maxusers=</span><span class="s">&quot;40000&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;ip</span> <span class="na">value=</span><span class="s">&quot;XXX.XXX.XXX.XXX&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/client&gt;</span>
+    <span class="nt">&lt;client</span> <span class="na">host=</span><span class="s">&quot;B&quot;</span> <span class="na">weight=</span><span class="s">&quot;1&quot;</span> <span class="na">cpu=</span><span class="s">&quot;2&quot;</span> <span class="na">maxusers=</span><span class="s">&quot;40000&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;ip</span> <span class="na">value=</span><span class="s">&quot;XXX.XXX.XXX.XXX&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/client&gt;</span>
+    <span class="nt">&lt;client</span> <span class="na">host=</span><span class="s">&quot;C&quot;</span> <span class="na">weight=</span><span class="s">&quot;1&quot;</span> <span class="na">cpu=</span><span class="s">&quot;2&quot;</span> <span class="na">maxusers=</span><span class="s">&quot;40000&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;ip</span> <span class="na">value=</span><span class="s">&quot;XXX.XXX.XXX.XXX&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/client&gt;</span>
+  <span class="nt">&lt;/clients&gt;</span>
+
+  <span class="c">&lt;!-- テスト対象のサーバー --&gt;</span>
+  <span class="nt">&lt;servers&gt;</span>
+    <span class="nt">&lt;server</span> <span class="na">host=</span><span class="s">&quot;&lt;httpサーバのIPorドメイン&gt;&quot;</span> <span class="na">port=</span><span class="s">&quot;80&quot;</span> <span class="na">type=</span><span class="s">&quot;tcp&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/servers&gt;</span>
+
+  <span class="c">&lt;!-- コネクション数の指定 --&gt;</span>
+  <span class="nt">&lt;load&gt;</span>
+    <span class="c">&lt;!--</span>
+<span class="c">      5分間で毎秒8ユーザーずつ最大1000ユーザーまでクライアントを生成する。</span>
+<span class="c">    --&gt;</span>
+    <span class="nt">&lt;arrivalphase</span> <span class="na">phase=</span><span class="s">&quot;1&quot;</span> <span class="na">duration=</span><span class="s">&quot;5&quot;</span> <span class="na">unit=</span><span class="s">&quot;minute&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;users</span> <span class="na">maxnumber=</span><span class="s">&quot;1000&quot;</span> <span class="na">arrivalrate=</span><span class="s">&quot;8&quot;</span> <span class="na">unit=</span><span class="s">&quot;second&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/arrivalphase&gt;</span>
+
+    <span class="c">&lt;!--</span>
+<span class="c">      10分間で毎秒8ユーザーずつ最大3000ユーザーまでクライアントを生成する。</span>
+<span class="c">    --&gt;</span>
+    <span class="nt">&lt;arrivalphase</span> <span class="na">phase=</span><span class="s">&quot;2&quot;</span> <span class="na">duration=</span><span class="s">&quot;10&quot;</span> <span class="na">unit=</span><span class="s">&quot;minute&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;users</span> <span class="na">maxnumber=</span><span class="s">&quot;3000&quot;</span> <span class="na">arrivalrate=</span><span class="s">&quot;8&quot;</span> <span class="na">unit=</span><span class="s">&quot;second&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/arrivalphase&gt;</span>
+    <span class="c">&lt;!--</span>
+<span class="c">      15分間で毎秒10ユーザーずつ最大10800ユーザーまでクライアントを生成する。</span>
+<span class="c">    --&gt;</span>
+    <span class="nt">&lt;arrivalphase</span> <span class="na">phase=</span><span class="s">&quot;3&quot;</span> <span class="na">duration=</span><span class="s">&quot;15&quot;</span> <span class="na">unit=</span><span class="s">&quot;minute&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;users</span> <span class="na">maxnumber=</span><span class="s">&quot;10800&quot;</span> <span class="na">arrivalrate=</span><span class="s">&quot;10&quot;</span> <span class="na">unit=</span><span class="s">&quot;second&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/arrivalphase&gt;</span>
+  <span class="nt">&lt;/load&gt;</span>
+
+  <span class="c">&lt;!--</span>
+<span class="c">    実際のクライアントの処理内容</span>
+<span class="c">    生成されたクライアントはいずれかのsessionを行うことになるため、probabilityの合計値は100とする必要がある</span>
+<span class="c">  --&gt;</span>
+  <span class="nt">&lt;sessions&gt;</span>
+    <span class="c">&lt;!--</span>
+<span class="c">      接続時に index.html を 100回 リクエストする。</span>
+<span class="c">    --&gt;</span>
+    <span class="nt">&lt;session</span> <span class="na">probability=</span><span class="s">&quot;100&quot;</span> <span class="na">name=</span><span class="s">&quot;ab&quot;</span> <span class="na">type=</span><span class="s">&quot;ts_http&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;for</span> <span class="na">from=</span><span class="s">&quot;1&quot;</span> <span class="na">to=</span><span class="s">&quot;5&quot;</span> <span class="na">var=</span><span class="s">&quot;i&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;request&gt;</span> <span class="nt">&lt;http</span> <span class="na">url=</span><span class="s">&quot;/index.html&quot;</span> <span class="na">method=</span><span class="s">&quot;GET&quot;</span> <span class="na">version=</span><span class="s">&quot;1.1&quot;</span><span class="nt">/&gt;</span> <span class="nt">&lt;/request&gt;</span>
+      <span class="nt">&lt;/for&gt;</span>
+    <span class="nt">&lt;/session&gt;</span>
+    <span class="c">&lt;!-- 他、画像やソケットなどトップページを構成する要素があれば追記する --&gt;</span>
+  <span class="nt">&lt;/sessions&gt;</span>
+
+<span class="nt">&lt;/tsung&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id7"></span><h2>動作確認<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> tsung -f ~/tsung.xml start
+</pre></div>
+</div>
+<p>アタックされた側・・・</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">[root@vm154 httpd]#</span> w
+<span class="go"> 13:41:36 up 1 day,  2:37,  2 users,  load average: 142.11, 47.35, 16.88</span>
+<span class="go">USER     TTY        LOGIN@   IDLE   JCPU   PCPU WHAT</span>
+<span class="go">senokuch pts/0     11:11    4.00s  0.82s  9.87s /bin/xfce4-terminal</span>
+<span class="go">senokuch pts/1     13:12    1.00s  0.54s  0.43s ssh -XC -o ServerAliveInterval=</span>
+</pre></div>
+</div>
+<p>楽しい!!! ✌('ω'✌ )三✌('ω')✌三( ✌'ω')✌</p>
+<div class="section" id="">
+<span id="id8"></span><h3>注意点<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<ul class="simple">
+<li>実行中は ${HOME}/.tsung/log/YYYYMMDD-HHMM/tsung_controller&#64;<hostname>.log を見る。</li>
+<li>下記のようなメッセージがログに出力された場合、重い？CPU性能が足りていない？</li>
+</ul>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="go">=ERROR REPORT==== 16-Oct-2015::11:09:02 ===</span>
+<span class="go">** Node tsung2@vm170 not responding **</span>
+<span class="go">** Removing (timedout) connection **</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>この場合、XMLに記載されたCPUの値を調整する(コア-2 がおすすめ)</li>
+<li>これは実際に動かしてみないとわからないので要試行錯誤。。。</li>
+</ul>
+</div>
+</div>
+<div class="section" id="">
+<span id="id9"></span><h2>グラフレポートの出力<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>tsung_stats.pl にてログファイルからHTML形式のレポートを生成する。</p>
+<div class="section" id="perl">
+<span id="perl"></span><h3>Perlモジュールのインストール<a class="headerlink" href="#perl" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> yum install perl-App-cpanminus @development gnuplot
+<span class="gp">#</span> cpanm Template
+</pre></div>
+</div>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> mkdir report <span class="p">;</span> <span class="nb">cd</span> <span class="nv">$_</span>
+<span class="gp">#</span> /usr/lib64/tsung/bin/tsung_stats.pl --stats /root/.tsung/log/YYYYMMDD-HHMM/tsung_controller<span class="se">\@</span>&lt;hostname&gt;.log
+</pre></div>
+</div>
+<p>カレントディレクトリにレポートのHTML・画像などが生成されるので適当に見る。</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, pochio.<br/>
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5 で生成しました。<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

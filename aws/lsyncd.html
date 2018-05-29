@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AmazonLinux + lsyncd+rsyncd の確認 &#8212; Memo  ドキュメント</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="その他、なんか色々" href="../etc/index.html" />
+    <link rel="prev" title="AWS/S3へのログバックアップ" href="s3_logarchive.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MEMO</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../oss/index.html">OSS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../oss/sphinx.html">Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3.html">GNS3 (Graphical Network Simulator)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/capturestream.html">CaptureStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix.html">ZABBIX導入手順 (RHEL/CentOS6)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/zabbix3.html">ZABBIX 3.0.1 のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/tsung.html">Tsung によるウェブサイトの負荷試験</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/ksar7.html">kSar7 による sysstat(sar) 情報のグラフ表示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/cacti.html">Cacti のインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/manual_p2v.html">ssh+tarを用いたP2V</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/mysql.html">公式レポジトリを利用したMySQLのインストール</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/apache2.4_memo.html">Apache 2.4 備忘録</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/percona_install.html">Percona XtraDB Cluster のインストール手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oss/gns3-on-cloud.html">Ubuntu 16.04 LTS　+ GNS3 v1.4.5 リモートサーバの構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../linux/index.html">RHEL/CentOS/Fedora</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmdev.html">RPMの作成手順</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/createrepo.html">ローカル・リポジトリの構築</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/rpmrepo_gpgsign.html">RPMパッケージと、ローカル・リポジトリへの署名方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/yum-autoupdate.html">yum-cron による自動アップデート</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/sophos.html">Sophos Antivirus for Linux 無償版の導入と設定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linux/jenkins.html">CentOS7.x + Jenkins を利用したRPMビルド環境の構築</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../windows/index.html">Windows Server/Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../windows/win2k12_nfs_mount.html">Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">AWS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="s3_logarchive.html">AWS/S3へのログバックアップ</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AmazonLinux + lsyncd+rsyncd の確認</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/index.html">その他、なんか色々</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../etc/sakura_vps.html">さくらVPS + CentOS7 による外部公開サーバの構築</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">AmazonLinux + lsyncd+rsyncd の確認</a><ul>
+<li><a class="reference internal" href="#url">参考URL</a></li>
+<li><a class="reference internal" href="#aws">AWSの状況</a></li>
+<li><a class="reference internal" href="#">セキュリティグループの設定</a></li>
+<li><a class="reference internal" href="#web-2-rsync">WEB#2 (rsync受け側) の設定</a><ul>
+<li><a class="reference internal" href="#">インストール</a></li>
+<li><a class="reference internal" href="#">起動スクリプトの作成</a></li>
+<li><a class="reference internal" href="#">同期設定</a><ul>
+<li><a class="reference internal" href="#">同期ディレクトリの作成</a></li>
+<li><a class="reference internal" href="#">設定ファイルの作成</a><ul>
+<li><a class="reference internal" href="#">設定内容補足</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#">ログローテート設定</a></li>
+<li><a class="reference internal" href="#">サービスの起動と確認</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#web-1-lsync">WEB#1 (lsync送り側) の設定</a><ul>
+<li><a class="reference internal" href="#">インストール</a></li>
+<li><a class="reference internal" href="#">同期設定</a><ul>
+<li><a class="reference internal" href="#">設定ファイルの作成</a></li>
+<li><a class="reference internal" href="#kernel">Kernelパラメータの調整</a></li>
+<li><a class="reference internal" href="#">起動</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#">動作確認とか</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="s3_logarchive.html" title="Previous Chapter: AWS/S3へのログバックアップ"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; AWS/S3へのログバックアップ</span>
+    </a>
+  </li>
+  <li>
+    <a href="../etc/index.html" title="Next Chapter: その他、なんか色々"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">その他、なんか色々 &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="amazonlinux-lsyncd-rsyncd">
+<span id="amazonlinux-lsyncd-rsyncd"></span><h1>AmazonLinux + lsyncd+rsyncd の確認<a class="headerlink" href="#amazonlinux-lsyncd-rsyncd" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>凄く今更感があるけど lsyncd+rsyncd メモ</p>
+<div class="section" id="url">
+<span id="url"></span><h2>参考URL<a class="headerlink" href="#url" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/axkibe/lsyncd/wiki/Manual-to-Lsyncd-2.1.x">Manual to Lsyncd 2.1.x</a></li>
+</ul>
+</div>
+<div class="section" id="aws">
+<span id="aws"></span><h2>AWSの状況<a class="headerlink" href="#aws" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>EC2インスタンスを２つ起動</li>
+<li>プライベートセグメント (10.0.1.0/24#AZ1, 10.0.3.11/24#AZ2)に1台ずつ</li>
+<li>WEB#1: 10.0.1.10/32</li>
+<li>WEB#2: 10.0.3.11/32</li>
+</ul>
+</div>
+<div class="section" id="">
+<span id="id1"></span><h2>セキュリティグループの設定<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>インバウンド: rsyncが用いる TCP/873 を開放</li>
+<li>アウトバウンド: 全開</li>
+<li>WEB#1,#2 両方に設定</li>
+</ul>
+</div>
+<div class="section" id="web-2-rsync">
+<span id="web-2-rsync"></span><h2>WEB#2 (rsync受け側) の設定<a class="headerlink" href="#web-2-rsync" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="">
+<span id="id2"></span><h3>インストール<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>yum にて rsync をインストール</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo yum install rsync
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id3"></span><h3>起動スクリプトの作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>デフォルトで起動スクリプトが存在しないので拾うか適当に作る(下記は<a class="reference external" href="https://access.redhat.com/documentation/ja-JP/Red_Hat_Enterprise_Linux/6/html/Managing_Confined_Services/sect-Managing_Confined_Services-rsync-Configuration_Examples.html">RedHatのドキュメント</a>を参考に作成)</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo vi /etc/init.d/rsyncd
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+
+# chkconfig: 2345 98 1
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+[ -f /usr/bin/rsync ] || exit 0
+
+case &quot;$1&quot; in
+start)
+ action &quot;Starting rsyncd: &quot; /usr/bin/rsync --daemon
+ ;;
+stop)
+ action &quot;Stopping rsyncd: &quot; killall rsync
+ ;;
+*)
+ echo &quot;Usage: rsyncd {start|stop}&quot;
+ exit 1
+esac
+ exit 0
+</pre></div>
+</div>
+<p>実行権限の付与と自動起動の有効化</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo chmod +x /etc/init.d/rsyncd
+<span class="gp">$</span> sudo chkconfig rsyncd on
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id4"></span><h3>同期設定<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id5"></span><h4>同期ディレクトリの作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>同期データの受け口となるディレクトリを作成</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> mkdir /home/ec2-user/public_html -p
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id6"></span><h4>設定ファイルの作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo vi /etc/rsyncd.conf
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>uid = ec2-user                          #&lt;-rsyncdを実行するユーザ
+gid = ec2-user                          #&lt;-rsyncdを実行するグループ
+read only = no
+log file = /var/log/rsyncd.log
+pid file = /var/run/rsyncd.pid
+
+[public_html]
+path = /home/ec2-user/public_html       #&lt;-lsyncd/同期先となるディレクトリ指定
+hosts allow = localhost 10.0.1.10/32    #&lt;-アクセスを許可するホストを指定
+hosts deny = *
+read only = false
+</pre></div>
+</div>
+<div class="section" id="">
+<span id="id7"></span><h5>設定内容補足<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h5>
+<ul class="simple">
+<li>同期データの書き込みは&quot;ec2-user&quot;にて行う</li>
+<li>[public_html] という設定を作成</li>
+<li>同期先のパスは &quot;/home/ec2-user/public_html&quot; とする</li>
+<li>この設定に同期可能なホストを &quot;localhost&quot; と、後で設定するWEB#1(lsyncd)に限定</li>
+</ul>
+</div>
+</div>
+<div class="section" id="">
+<span id="id8"></span><h4>ログローテート設定<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> vi /etc/logrotate.d/rsyncd
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/var/log/rsyncd.log {
+       rotate 10
+       missingok
+       notifempty
+       sharedscripts
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id9"></span><h4>サービスの起動と確認<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo service rsyncd start
+<span class="gp">$</span> ps -efww <span class="p">|</span> grep rsync
+<span class="gp">$</span> sudo tail /var/log/rsyncd.log
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="web-1-lsync">
+<span id="web-1-lsync"></span><h2>WEB#1 (lsync送り側) の設定<a class="headerlink" href="#web-1-lsync" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="">
+<span id="id10"></span><h3>インストール<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>yum を用いてインストールを行う。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo yum --enablerepo<span class="o">=</span>epel install lsyncd
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id11"></span><h3>同期設定<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="">
+<span id="id12"></span><h4>設定ファイルの作成<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<ul class="simple">
+<li>/etc/lsyncd.conf を新規作成する</li>
+<li>lsyncd の設定サンプルは &quot;/usr/share/doc/lsyncd-x.y.z/examples/&quot; に存在する(ssh経由でrsyncを行う場合など必要に応じて参照)</li>
+</ul>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo cp /etc/lsyncd.conf<span class="o">{</span>,.orig<span class="o">}</span>
+<span class="gp">$</span> sudo vi /etc/lsyncd.conf
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>-- Lua で記述されているので変更時には注意
+-- delay  = settings/delayでデフォルトの同期遅延15秒を3秒に変更
+-- delete = true により削除も含めた完全同期にする
+-- init   = lsyncd 再起動時の同期を止めたい場合は false にする。
+
+settings {
+       logfile    = &quot;/var/log/lsyncd/lsyncd.log&quot;,
+       statusFile = &quot;/tmp/lsyncd.stat&quot;,
+       statusInterval = 1,
+       maxProcesses   = 2,
+       nodaemon       = false,
+       insist         = 1,
+       delay          = 3,
+}
+
+sync {
+       default.rsync,
+       source=&quot;/home/ec2-user/public_html&quot;,
+       target = &#39;10.0.3.11::public_html/&#39;,
+       delete = true,
+       #init = false,
+       rsync={
+               archive = true,
+               owner = true,
+               compress = true,
+               _extra = {
+                       &quot;-a&quot;,
+                       &quot;--numeric-ids&quot;,
+                       &quot;--timeout=600&quot;,
+                       &quot;--contimeout=60&quot;,
+               },
+       },
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="kernel">
+<span id="kernel"></span><h4>Kernelパラメータの調整<a class="headerlink" href="#kernel" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>lsyncdで監視/同期するファイル数を増やすためにKernelパラメータの値を増やす。</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo vi /etc/sysctl.conf                              
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>...
+## lsyncd inotify settings                              
+fs.inotify.max_queued_events = 32768
+fs.inotify.max_user_watches = 2097152
+</pre></div>
+</div>
+<p>確認</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo sysctl -a <span class="p">|</span> grep inotify                             
+<span class="go">fs.inotify.max_user_instances = 128                             </span>
+<span class="go">fs.inotify.max_user_watches = 2097152                               </span>
+<span class="go">fs.inotify.max_queued_events = 32768                                </span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id13"></span><h4>起動<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo chkconfig lsyncd on
+<span class="gp">$</span> sudo service lsyncd start
+<span class="gp">$</span> sudo tail -f /var/log/lsyncd/lsyncd.log
+<span class="go"> =&gt;パーミッションやrsync先への疎通不能などのエラーが出力されていない事を確認</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="">
+<span id="id14"></span><h2>動作確認とか<a class="headerlink" href="#" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>設定後ファイルの作成・更新・時刻更新・削除などを行い同期される事を確認</li>
+<li>同期先でファイルを操作しても、同期元に反映されない事を確認</li>
+<li>同期先でファイルを削除しても、lsyncd の再起動/再同期で戻る事を確認</li>
+</ul>
+<p>以上</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, pochio.<br/>
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5 で生成しました。<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

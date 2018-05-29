@@ -1,0 +1,187 @@
+
+# Windows Server 2008 R2 / 2012 R2 のNFSクライアント設定
+
+調べて〜と言われたので調べてみた。ざっくり見ただけなので多々間違えてるかも。
+
+## 概要
+
+  - Windows Server 2008 R2 / 2012 R2 でNetApp/NFSv3のマウントを行いたい。
+  - UID/GIDの紐付けを行い、UNIXライクに"ちゃんと"オーナ・権限が機能ようにしたい。
+
+## 結果
+
+  - Windows Server 2008 R2
+    - UID/GIDのマッピングにAD+AD拡張が必須(だし面倒なので調べるの止めた)
+    - SFU/SUAなどPOSIX互換環境は終息している(公開はされているが推奨されていない)
+    - CygwinのマウントではCygwinライブラリを利用したソフトでなければ利用できない
+    - 他サードパーティ製のNFSクライアントもあるが古いものが多くエンプラ用途で信頼性に問題がありそうなので除外した。
+  - Windows Server 2012 R2
+  　- 癖があるがLinuxサーバと同じように利用することが出来る。
+    - サーバ起動時にSYSTEMユーザでマウントするが"切断したネットワークドライブ"表示となる(アクセスはできる)、　ただしSYSTEM以外の一般ユーザでのアクセスが Anonymous になる。
+    - マウントしたユーザ または マウント時に指定したユーザでのアクセスになる仕様っぽい。都度ユーザ別にマッピングしてくれるような便利機能はない模様
+    - 各ユーザ毎にマウントすることは出来る。この場合マッピングが有効になるがログイン時に有効化される(OS起動時ではない)
+    - なので使い方としてはサービスで利用するアクセスは匿名に。ユーザ毎のアクセスは個別に・・というようになるかも。
+
+## 参考URL
+
+### Windows Serve 2012 R2
+
+  - [NFS Identity Mapping in Windows Server 2012](http://blogs.technet.com/b/filecab/archive/2012/10/09/nfs-identity-mapping-in-windows-server-2012.aspx)
+
+### Windows Server 2008 R2
+
+  - [ステップ バイ ステップ ガイド - Windows Server 2008 の NFS 用サービス](https://technet.microsoft.com/ja-jp/library/cc753302.aspx)
+  - [NFS Account Mapping in Windows Server 2008 R2](https://www.microsoft.com/en-us/download/details.aspx?id=14205)
+  - [UNIX ベース アプリケーション用サブシステムの概要](https://technet.microsoft.com/ja-jp/library/cc771672.aspx#BKMK_Longhorn)
+  - [Utilities and SDK for Subsystem for UNIX-based Applications in Microsoft Windows 7 and Windows Server 2008 R2](http://www.microsoft.com/en-us/download/details.aspx?id=2391)
+  - [Windows Server 2012 で削除された機能または推奨されなくなった機能](https://technet.microsoft.com/ja-jp/library/hh831568)
+  - [Cygwin(公式サイト)](https://www.cygwin.com/)
+
+  1. 2008まではユーザ・マッピングの機能が提供されていたが R2 にて廃止されている(R2ではAD連携必須)
+  2. SFU/SUAはすでに終息しており、Win2k12以降でPOSIX互換環境を利用する場合は Cygwin/MinGW が推奨されている（？）・・・が無理だった。
+  3. Cygwinでマウントした場合、Windows上からは認識できず、Cygwinのライブラリを利用してのアクセスになる。
+  4. くっそめんどくさいので放棄
+
+## やること
+
+  1. NFS(v3)サーバの構築(RHEL/CentOS7)
+  2. NFS(v3)サーバにユーザを追加(ホームディレクトリをエクスポート上に置く)
+  3. NFS(v3)サーバにてエクスポート設定(後述するWin鯖にエクスポート)
+  4. Windows Server 2008 R2 によるNFSマウント
+  5. 　〃　にてユーザ・グループマッピングの確認(やり方・設定)
+  6. 　〃　にてファイルの書き込みとNFSサーバ上での整合性確認(UID/GIDが正しいか)
+  7. Windows Server 2012 R1 によるNFSマウント
+  8. 　〃　にてユーザ・グループマッピングの確認(やり方・設定)
+  9. 　〃　にてファイルの書き込みとNFSサーバ上での整合性確認(UID/GIDが正しいか)
+
+### NFS(v3)サーバの構築(RHEL/CentOS7)
+
+1. RHEL/CentOS7 にて構成
+  ```shell-session
+  # sed -i s/SELINUX=enforcing/SELINUX=disabled/g /etc/selinux/config
+  # systemctl disable firewalld
+  # systemctl stop firewalld
+  # yum upgrade -y && shutdown -r now
+  ```
+2. NFS関連パッケージのインストール
+  ```shell-session
+  # yum install nfs-utils rpcbind
+  # systemctl enable nfs
+  ```
+3. NFSの起動
+  ```shell-session
+  # systemctl start rpcbind
+  # systemctl start nfs
+  ```
+4. ユーザを追加
+  ```shell-session
+  # mkdir -p /export/home
+  # groupadd -g 1001 grp1
+  # useradd -g 1001 -u 1001 -c 'NFS User #1' -d /export/home/usr1 usr1
+  # groupadd -g 1002 grp2
+  # useradd -g 1002 -u 1002 -c 'NFS User #2' -d /export/home/usr2 usr2
+  # groupadd -g 1003 grp3
+  # useradd -g 1003 -u 1003 -c 'NFS User #3' -d /export/home/usr3 usr3
+  # groupadd -g 1004 grp4
+  # useradd -g 1004 -u 1004 -c 'NFS User #4' -d /export/home/usr4 usr4
+  # groupadd -g 1005 grp5
+  # useradd -g 1005 -u 1005 -c 'NFS User #5' -d /export/home/usr5 usr5
+  ```
+5. NFSエクスポート
+  ```shell-session
+  # vi /etc/exports
+    /export/home	127.0.0.1/32(rw,no_root_squash) <WIN NFSCLIENT>/32(rw,no_root_squash) <WIN NFSCLIENT>/32(rw,no_root_squash)
+  # exportfs -a
+  ```
+6. マウントの確認
+  ```shell-session
+  # mkdir /tmp/test
+  # mount -t nfs 127.0.0.1:/export/home /tmp/test
+  # mount   #<-確認
+  # umount /tmp/test
+  # rmdir /tmp/test
+  ```
+
+### Windows Server 2008 R2
+
+  1. OSのインストール(KVM/virtio)
+  2. 最新状態までWindows Updateの実施(長い・・)
+  3. 結果に記載した通り放置
+
+### Windows Server 2012 R1
+
+1. OSのインストール(KVM/virtio)
+2. 最新状態までWindows Updateの実施
+3. [サーバーマネージャー]-[役割と機能の追加]をクリック
+4. 最初はスルーし"機能"まで進んだら"NFSクライアント"にチェックを入れインストールを行う。
+5. 任意のLinuxサーバから passwd/group ファイルを取得し、下記のように編集する。
+6. 下記のパスに編集したファイルを設置する。
+    ```text
+    %SystemRoot%\system32\drivers\etc\passwd
+    %SystemRoot%\system32\drivers\etc\group
+    ※%SystemRoot% = C:\Windows がデフォルト
+    ```
+- passwd の記入例  
+  ```text
+  Administrator:x:0:0:root:/root:/bin/bash
+  winusr1:x:1001:1001:NFS User #1:/export/home/usr1:/bin/bash
+  winusr2:x:1002:1002:NFS User #2:/export/home/usr2:/bin/bash
+  winusr3:x:1003:1003:NFS User #3:/export/home/usr3:/bin/bash
+  winusr4:x:1004:1004:NFS User #4:/export/home/usr4:/bin/bash
+  winusr5:x:1005:1005:NFS User #5:/export/home/usr5:/bin/bash
+  ```
+- group の記入例  
+  ```text
+  BUILTIN\Administrators:x:0:root
+  wingrp1:x:1001:
+  wingrp2:x:1002:
+  wingrp3:x:1003:
+  wingrp4:x:1004:
+  wingrp5:x:1005:
+  ```
+
+#### Windowsユーザ毎のマウント
+
+ユーザ毎にマウントする場合の例、ただしシステム起動時にマウントされないためサービスなどで利用できない
+
+1. 上記に合わせてWindowsサーバにグループ/ユーザの追加を実施(範囲外のwinusr6/wingrp6も追加)
+2. 各ユーザにてネットワーク接続のパーシステント有効化とマウントを行う。
+  ```text
+  net use /persistent:yes
+  mount <NFS SERVER>:/export/home Z:\
+  ```
+3. エクスプローラーでNFS領域がマウントされていることを確認
+
+#### Windows起動時のマウント
+
+OS起動時(スタートアップ)時にマウントする場合は、SYSTEMユーザで行う必要がある。
+
+1. 下記のような内容のバッチファイルを作成
+  ```text
+  c:\windows\nfsmount.bat
+  mount <NFS SERVER>:/export/home Y:\
+  ```
+2. タスクスケジューラにて下記のような内容でタスクを登録する。
+  ```text
+  タスク名: nfsmount
+  実行ユーザ: SYSTEM
+  特権で実行にチェック
+  表示しないにチェック
+  タスクの開始はスタートアップ時
+  実行するシェルは上記バッチファイル
+  ```
+3. サーバを再起動し、Y:\ ドライブ経由でNFSにアクセスできることを確認、ただし匿名ユーザアクセスかつ"切断したネットワークドライブ"的な表記になる。
+
+#### 匿名ユーザのUID/GIDを変更する
+
+デフォルトだと強制的に"4294967294(-2)"で固定されるのでレジストリで値を設定する。
+
+1. レジストリエディタを起動し、下記を開く
+  ```text
+  \HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ClientForNFS\CurrentVersion\Default
+  ```
+2. 新規キーの追加で下記を追加する
+  ```text
+  AnonymousUid , 新規作成, DWORD値, 10進数でUID値を入力
+  AnonymousGid , 新規作成, DWORD値, 10進数でGID値を入力
+  ```

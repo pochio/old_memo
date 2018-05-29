@@ -1,0 +1,109 @@
+===================================
+GNS3 (Graphical Network Simulator)
+===================================
+
+- GNS3_
+- Community_
+- GitHub_
+
+.. _GNS3: http://www.gns3.com/
+.. _Community: https://community.gns3.com/welcome
+.. _GitHub: https://github.com/GNS3/
+
+Fedora 21 (x86_64) への導入手順
+================================
+
+#. SELinux の無効化
+   ::
+   
+     $ sudo sed -i s/SELINUX=enforcing/SELINUX=disabled/g /etc/selinux/config
+     $ sudo setenforce permissive
+
+#. RPMFusion_ レポジトリの有効化
+   ::
+   
+     $ sudo yum install http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-21.noarch.rpm
+     $ sudo yum install http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-21.noarch.rpm
+     
+   .. _RPMFusion: http://rpmfusion.org/
+
+#. 依存パッケージなどの導入
+   ::
+   
+     $ sudo yum groupinstall "Development Tools"
+     $ sudo yum install git python3-devel python3-pip python3-setuptools \
+     python3-PyQt4 python3-PyQt4.i686 python3-zmq python3-tornado zeromq3-devel \
+     elfutils-libelf-devel libuuid-devel libpcap-devel python-pip VirtualBox \
+     VirtualBox-devel python-VirtualBox gnome-terminal wireshark xdotool \
+     iniparser-devel bison cmake
+     $ sudo pip3 install netifaces
+
+#. "iouyap" のインストール
+   ::
+   
+     $ cd ~ ; mkdir gns3_setup ; cd $_
+     $ git clone https://github.com/GNS3/iouyap.git
+     $ cd iouyap
+     $ make && sudo make install
+     $ cd ..
+   
+#. "Dynamips" のインストール
+   ::
+   
+     $ git clone https://github.com/GNS3/dynamips
+     $ cd ../dynamips
+     $ cmake .
+     $ make && sudo make install
+     $ cd ..
+   
+#. Python virtualenv/virtualenvwrapperの設定
+   ::
+   
+     $ sudo pip install virtualenv virtualenvwrapper
+     $ vi ~/.bashrc
+     ...
+     # Python virtualenvwrapper
+     export WORKON_HOME=$HOME/.virtualenvs
+     
+     if [ -f /usr/bin/virtualenvwrapper.sh ]; then
+       source /usr/bin/virtualenvwrapper.sh
+     fi
+     
+     # Python pip -> virtualenv only
+     export PIP_REQUIRE_VIRTUALENV=true
+     export PIP_RESPECT_VIRTUALENV=true
+     ...
+     $ source ~/.bashrc
+     $ ls -la    #<- ~/.virtualenvs ディレクトリが出来た事を確認
+
+#. GNS3用のPython環境を作る
+   ::
+   
+     $ mkvirtualenv --system-site-packages --python=/usr/bin/python3 gns3
+     ...
+     (gns3)$    #<- virtualenv/gns3環境に移行
+   
+   ..  note::
+
+     以後GNS3環境に移る場合は workon gns3 、抜ける場合は deactivate で抜ける
+
+7. インストール
+   ::
+   
+     (gns3)$ git clone https://github.com/GNS3/gns3-gui
+     (gns3)$ git clone https://github.com/GNS3/gns3-server
+     (gns3)$ cd gns3-gui
+     (gns3)$ python setup.py install
+     (gns3)$ cd ../gns3-server
+     (gns3)$ python setup.py install
+
+8. GNS3 の起動
+   ::
+   
+     (gns3)$ gns3
+     
+   .. note::
+   
+     1. GNS3 Server は gns3 起動する際に、自動的に起動される
+     2. 以後 gns3 を起動する場合は、都度 workon gns3 を行ってから起動する
+
